@@ -60,3 +60,9 @@ interface Logo {
     src: string;
     alt?: string;
 }
+
+export enum UserLocation {
+    signup,
+    login,
+    dashboard,
+  }

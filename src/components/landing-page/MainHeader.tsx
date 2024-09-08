@@ -15,8 +15,8 @@ export const MainHeader = (): JSX.Element => {
                 ease in one place so you can be a good steward of your time.
                 </Box>
                 <SpaceBetween direction="horizontal" size="xs">
-                <Button variant="primary">Get Started</Button>
-                <Button variant='normal'>Log In</Button>
+                    <Button variant="primary" href='/sign-up'>Get Started </Button>
+                    <Button variant='normal' href='/log-in'>Log In</Button>
                 </SpaceBetween>
             </Box>
         </Container>
