@@ -1,9 +1,44 @@
-import { Box, Button, Container, Form, FormField, Input, SpaceBetween } from "@cloudscape-design/components";
+import { Alert, Box, Button, Container, Form, FormField, Input, SpaceBetween } from "@cloudscape-design/components";
 import { useState } from "react";
 import { Link } from "react-router-dom";
-import { SpaceBetweenDirection, SpaceBetweenSize } from "../constants-styles";
+import { SignUpStep, SpaceBetweenDirection, SpaceBetweenSize } from "../constants-styles";
 
-export const SignUpForm = (): JSX.Element => {
+declare global {
+  interface Window {
+    Clerk: any;
+  }
+}
+
+interface SignUpFormProps {
+  setCurrentStep: React.Dispatch<React.SetStateAction<SignUpStep>>;
+}
+
+interface ClerkAPIError {
+  code: string;
+  message: string;
+  longMessage: string;
+  meta?: {
+    paramName?: string
+    sessionId?: string
+    emailAddresses?: string[]
+    identifiers?: string[]
+    zxcvbn?: {
+      suggestions: {
+        code: string
+        message: string
+      }[]
+    }
+    permissions?: string[]
+  }
+}
+
+interface ClerkAPIErrorResponse {
+  status: number;
+  clerkError: boolean;
+  errors: ClerkAPIError[];
+}
+
+export const SignUpForm = ({ setCurrentStep }: SignUpFormProps): JSX.Element => {
   const [firstName, setFirstName] = useState('');
   const [lastName, setLastName] = useState('');
   const [email, setEmail] = useState('');
@@ -16,7 +51,9 @@ export const SignUpForm = (): JSX.Element => {
   const [passwordError, setPasswordError] = useState('');
   const [confirmPasswordError, setConfirmPasswordError] = useState('');
 
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState<boolean>(false);
+  const [isError, setIsError] = useState<boolean>(false);
+  const [errorMessage, setErrorMessage] = useState('');
 
   const Header = (): JSX.Element => (
     <Box>
@@ -46,8 +83,8 @@ export const SignUpForm = (): JSX.Element => {
       !value
         ? 'Password is required'
         : value.length < 6
-        ? 'Password must be at least 6 characters'
-        : ''
+          ? 'Password must be at least 6 characters'
+          : ''
     );
     validateConfirmPassword(confirmPassword);
   };
@@ -58,24 +95,57 @@ export const SignUpForm = (): JSX.Element => {
       !value
         ? 'Confirm password is required'
         : value !== password
-        ? 'Passwords do not match'
-        : ''
+          ? 'Passwords do not match'
+          : ''
     );
   };
 
-  const handleSubmit = (): void => {
+  const handleSubmit = async (): Promise<void> => {
 
     const isFormValid = (): boolean => !!(!firstNameError && !lastNameError && !emailError && !passwordError && !confirmPasswordError && firstName && lastName && email && password && confirmPassword);
 
+    const isClerkAPIResponseError = (error: ClerkAPIErrorResponse): boolean => {
+      return error.clerkError;
+    }
+
     if (isFormValid()) {
-      // Perform the API logic here, e.g., sign up the user
-      console.log('User signed up successfully');
       setLoading(true);
-    }else{
-        validateFirstName(firstName);
-        validateLastName(lastName);
-        validateEmail(email);
-        validatePassword(password);
+
+      try {
+        if (!window.Clerk) {
+          throw new Error('Clerk is not initialized.');
+        }
+
+        await window.Clerk.load();
+
+        if (!window.Clerk.client || !window.Clerk.client.signUp) {
+          throw new Error('Clerk client is not available.');
+        }
+
+        const signUpConfig = {
+          emailAddress: email,
+          password: password,
+        }
+        await window.Clerk.client.signUp.create(signUpConfig);
+        await window.Clerk.client.signUp.prepareEmailAddressVerification();
+
+        setCurrentStep(SignUpStep.Verification);
+        console.log('User signed up successfully');
+      } catch (error) {
+        console.log(JSON.stringify(error, null, 2));
+        const errorReceived = error as ClerkAPIErrorResponse;
+        if (isClerkAPIResponseError(errorReceived)) {
+          setIsError(true);
+          setErrorMessage(errorReceived.errors[0].longMessage);
+          setLoading(false);
+        }
+
+      }
+    } else {
+      validateFirstName(firstName);
+      validateLastName(lastName);
+      validateEmail(email);
+      validatePassword(password);
     }
   };
 
@@ -89,6 +159,7 @@ export const SignUpForm = (): JSX.Element => {
             width: "25vw",
             height: "15vh",
           }}>
+          {isError && <Alert type="warning">{errorMessage}</Alert>}
           <Form >
             <SpaceBetween direction={SpaceBetweenDirection.vertical} size={SpaceBetweenSize.medium}>
               <FormField label="First Name" stretch errorText={firstNameError}>

@@ -1,35 +1,15 @@
-import React from 'react'
-import ReactDOM from 'react-dom/client'
-import "@cloudscape-design/global-styles/index.css"
-
-import { createBrowserRouter, RouterProvider } from 'react-router-dom'
-import { Home } from './components/landing-page'
-import { LoginPage } from './components/log-in/LoginPage'
-import NotFoundRedirect from './components/error-page/NotFoundRedirect'
-import { SignUpPage } from './components/sign-up/SignUpPage'
-
-const router = createBrowserRouter([
-  {
-    path: '/',
-    element: <Home />,
-    errorElement: <NotFoundRedirect />,
-  },
-  {
-    path: '/log-in',
-    element: <LoginPage/>,
-  },
-  {
-    path: '/sign-up',
-    element: <SignUpPage/>,
-  },
-  {
-    path: '/dashboard/:userName',
-    element: <></>,
-  },
-]);
+import React from 'react';
+import ReactDOM from 'react-dom/client';
+import '@cloudscape-design/global-styles/index.css';
+import { ClerkScriptLoader } from './authentication/ClerkScriptLoader';
+import { App } from './App';
+import { BrowserRouter } from "react-router-dom";
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>
-    <RouterProvider router={router}/>
+    <ClerkScriptLoader />
+    <BrowserRouter>
+      <App />
+    </BrowserRouter>
   </React.StrictMode>
-)
+);

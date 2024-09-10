@@ -3,7 +3,7 @@ import { backgroundImageStyle, outerContainerStyle, overlayContainerStyle, Space
 import { NavigationBar } from "../NavigationBar"
 import { LogInForm } from "./LogInForm"
 
-export const LoginPage = (): JSX.Element => {
+export const LogInPage = (): JSX.Element => {
 
     const homeBackground = (): JSX.Element => {
         const imgSrcPath = "/public/sign-in-page-background.jpg"
@@ -16,8 +16,8 @@ export const LoginPage = (): JSX.Element => {
     }
 
     return (
-        <div style={{overflow: 'hidden'}}>
-            <NavigationBar userLocation={UserLocation.login}/>
+        <div style={{ overflow: 'hidden' }}>
+            <NavigationBar userLocation={UserLocation.login} />
             <div style={outerContainerStyle}>
                 {homeBackground()}
                 <div style={overlayContainerStyle}>

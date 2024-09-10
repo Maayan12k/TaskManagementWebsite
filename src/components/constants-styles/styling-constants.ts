@@ -65,4 +65,9 @@ export enum UserLocation {
     signup,
     login,
     dashboard,
-  }
+}
+
+export enum SignUpStep {
+    SignUp,
+    Verification,
+}
