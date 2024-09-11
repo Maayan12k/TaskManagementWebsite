@@ -1,9 +1,10 @@
 import { Container } from "@cloudscape-design/components"
-import { backgroundImageStyle, outerContainerStyle, overlayContainerStyle, SignUpStep, SpaceBetweenDirection, SpaceBetweenSize, UserLocation } from "../constants-styles"
-import { NavigationBar } from "../NavigationBar"
+import { backgroundImageStyle, outerContainerStyle, overlayContainerStyle, SignUpStep, SpaceBetweenDirection, SpaceBetweenSize, UserLocation } from "../constants-styles-types"
+import { NavigationBar } from "../shared-components/NavigationBar"
 import { SignUpForm } from "./SignUpForm"
 import { EmailVerification } from "./EmailVerification"
 import { useState } from "react"
+import { Background } from "../shared-components/Background"
 
 export const SignUpPage = (): JSX.Element => {
     const [currentStep, setCurrentStep] = useState<SignUpStep>(SignUpStep.SignUp);
@@ -17,21 +18,11 @@ export const SignUpPage = (): JSX.Element => {
         }
     }
 
-    const homeBackground = (): JSX.Element => {
-        const imgSrcPath = "/sign-in-page-background.jpg"
-        return (
-            <img
-                src={imgSrcPath}
-                style={backgroundImageStyle}
-            />
-        )
-    }
-
     return (
         <>
             <NavigationBar userLocation={UserLocation.signup} />
             <div style={outerContainerStyle}>
-                {homeBackground()}
+                <Background imgSrcPath="/sign-in-page-background.jpg" />
                 <div style={overlayContainerStyle}>
                     <Container>
                         {steps(currentStep)}

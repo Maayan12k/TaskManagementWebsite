@@ -7,7 +7,6 @@ import { createBrowserRouter } from 'react-router-dom';
 import { HomePage } from './components/home-page';
 import { SignUpPage } from './components/sign-up/SignUpPage';
 import { SignInPage } from './components/sign-in/SignInPage';
-import NotFoundRedirect from './components/error-page/NotFoundRedirect';
 import { DashboardPage } from './components/dashboard/DashboardPage';
 import RootLayout from './layouts/root-layout'
 import DashboardLayout from './layouts/dashboard-layout'

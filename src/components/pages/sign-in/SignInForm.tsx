@@ -1,15 +1,14 @@
-import { Box, Button, Container, Form, FormField, Input, SpaceBetween } from "@cloudscape-design/components";
+import { Button, Container, Form, FormField, Input, SpaceBetween } from "@cloudscape-design/components";
 import { useState } from "react";
-import { SpaceBetweenDirection, SpaceBetweenSize } from "../constants-styles/styling-constants";
+import { SpaceBetweenDirection, SpaceBetweenSize } from "../constants-styles-types/styling-constants";
 import { Link } from "react-router-dom";
+import { Header } from "../shared-components/Header";
 
 export const SignInForm = (): JSX.Element => {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
-
     const [emailError, setEmailError] = useState('');
     const [passwordError, setPasswordError] = useState('');
-
     const [loading, setLoading] = useState(false);
 
     const validateEmail = (value: string): void => {
@@ -29,15 +28,6 @@ export const SignInForm = (): JSX.Element => {
         );
     };
 
-
-    const Header = (): JSX.Element => {
-        return (
-            <Box>
-                <h1>Sign In</h1>
-            </Box>
-        );
-    }
-
     const handleSubmit = (): void => {
         const isFormValid = (): boolean => !!(!emailError && !passwordError && email && password);
 
@@ -53,9 +43,9 @@ export const SignInForm = (): JSX.Element => {
 
     return (
         <div style={{ width: '40vw' }}>
-            <SpaceBetween size='l' direction='vertical'>
+            <SpaceBetween size={SpaceBetweenSize.large} direction={SpaceBetweenDirection.vertical}>
                 <Container
-                    header={<Header />}
+                    header={<Header title={'Sign In'} />}
                     media={{
                         content: <img src="/log-in-media.jpg" />,
                         position: "top",

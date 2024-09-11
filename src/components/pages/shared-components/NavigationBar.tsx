@@ -1,6 +1,6 @@
 import { TopNavigation } from "@cloudscape-design/components";
 import { useEffect, useState } from "react";
-import { Identity, UserLocation, Utility } from "./constants-styles/styling-constants";
+import { Identity, UserLocation, Utility } from "../constants-styles-types/styling-constants";
 
 interface NavigationBarProps {
   userLocation?: UserLocation;
