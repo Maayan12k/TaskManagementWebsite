@@ -1,10 +1,16 @@
-import { Box, Button, Container, Form, FormField, Input, SpaceBetween } from "@cloudscape-design/components"
+import { Alert, Box, Button, Container, Form, FormField, Input, SpaceBetween } from "@cloudscape-design/components"
 import { SpaceBetweenDirection, SpaceBetweenSize } from "../constants-styles";
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { useUser } from "@clerk/clerk-react";
+import { isClerkAPIResponseError } from "./auth/SignUpModel";
 
 export const EmailVerification = (): JSX.Element => {
     const [emailVerificationCode, setEmailVerificationCode] = useState('');
     const [loading, setLoading] = useState(false);
+    const [isError, setIsError] = useState<boolean>(false);
+    const [errorMessage, setErrorMessage] = useState('');
+    const navigate = useNavigate();
 
     const Header = (): JSX.Element => (
         <Box>
@@ -19,11 +25,22 @@ export const EmailVerification = (): JSX.Element => {
         try {
             const verify = await window.Clerk.client.signUp.attemptEmailAddressVerification({ emailVerificationCode });
             await window.Clerk.setActive({ session: verify.createdSessionId });
-        } catch (error) {
-            console.error(error);
-        }
+            const { user, isSignedIn } = useUser();
+            if (isSignedIn) {
+                navigate('/dashboard/' + user.id);
+            }
 
-        //redirect to dashboard
+        } catch (error) {
+            console.error(JSON.stringify(error, null, 2));
+            if (isClerkAPIResponseError(error)) {
+                setIsError(true);
+                if (error.errors[0].longMessage == 'email_verification_code is not a valid parameter for this request.')
+                    setErrorMessage("Invalid verification code. Please try again.");
+                else
+                    setErrorMessage(error.errors[0].longMessage);
+            }
+            setLoading(false);
+        }
     }
 
     return (
@@ -36,6 +53,7 @@ export const EmailVerification = (): JSX.Element => {
                         width: "25vw",
                         height: "15vh",
                     }}>
+                    {isError && <Alert type="warning">{errorMessage}</Alert>}
                     <Form header={<h2>Enter the verification code sent to your email</h2>}>
                         <SpaceBetween direction={SpaceBetweenDirection.vertical} size={SpaceBetweenSize.medium}>
                             <FormField label="Email Verification Code" stretch >
