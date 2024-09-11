@@ -18,7 +18,7 @@ export const SignUpPage = (): JSX.Element => {
     }
 
     const homeBackground = (): JSX.Element => {
-        const imgSrcPath = "/public/sign-in-page-background.jpg"
+        const imgSrcPath = "/sign-in-page-background.jpg"
         return (
             <img
                 src={imgSrcPath}

@@ -17,12 +17,6 @@ export interface ClerkAPIError {
     };
 }
 
-declare global {
-    interface Window {
-        Clerk: any;
-    }
-}
-
 export interface ClerkAPIErrorResponse {
     status: number;
     clerkError: boolean;

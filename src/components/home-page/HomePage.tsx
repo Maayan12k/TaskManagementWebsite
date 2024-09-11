@@ -7,7 +7,7 @@ import { NavigationBar } from '../NavigationBar'
 export const HomePage = (): JSX.Element => {
 
     const homeBackground = (): JSX.Element => {
-        const imgSrcPath = "/public/home-background.jpg"
+        const imgSrcPath = "/home-background.jpg"
         return (
             <img
                 src={imgSrcPath}

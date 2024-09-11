@@ -1,16 +1,12 @@
+// SignUpForm.tsx
+
 import { Alert, Box, Button, Container, Form, FormField, Input, SpaceBetween } from "@cloudscape-design/components";
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import { SignUpStep, SpaceBetweenDirection, SpaceBetweenSize } from "../constants-styles";
-import {
-  validateFirstName,
-  validateLastName,
-  validateEmail,
-  validatePassword,
-  validateConfirmPassword,
-  handleSignUp,
-  isClerkAPIResponseError,
-} from './auth/SignUpModel';
+import { useClerk } from "@clerk/clerk-react";
+import { validateConfirmPassword, validateEmail, validateFirstName, validateLastName, validatePassword } from "./auth/SignUpModel";
+import { handleSignUp } from "./auth/SignUpController";
 
 interface SignUpFormProps {
   setCurrentStep: React.Dispatch<React.SetStateAction<SignUpStep>>;
@@ -33,11 +29,7 @@ export const SignUpForm = ({ setCurrentStep }: SignUpFormProps): JSX.Element => 
   const [isError, setIsError] = useState<boolean>(false);
   const [errorMessage, setErrorMessage] = useState('');
 
-  const Header = (): JSX.Element => (
-    <Box>
-      <h1>Sign Up</h1>
-    </Box>
-  );
+  const clerk = useClerk();
 
   const handleSubmit = async (): Promise<void> => {
     setFirstNameError(validateFirstName(firstName));
@@ -51,19 +43,22 @@ export const SignUpForm = ({ setCurrentStep }: SignUpFormProps): JSX.Element => 
     if (!isFormValid) return;
 
     setLoading(true);
-
     try {
-      await handleSignUp(email, password);
-      setCurrentStep(SignUpStep.Verification);
+      await handleSignUp(email, password, setCurrentStep, setIsError, setErrorMessage, clerk);
     } catch (error) {
       console.error(JSON.stringify(error, null, 2));
-      if (isClerkAPIResponseError(error)) {
-        setIsError(true);
-        setErrorMessage(error.errors[0].longMessage);
-      }
+      setIsError(true);
+      setErrorMessage('An unexpected error occurred.');
+    } finally {
       setLoading(false);
     }
   };
+
+  const Header = (): JSX.Element => (
+    <Box>
+      <h1>Sign Up</h1>
+    </Box>
+  );
 
   return (
     <div style={{ width: '50vw' }}>

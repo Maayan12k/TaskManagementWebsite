@@ -27,24 +27,6 @@ export const validateConfirmPassword = (password: string, confirmPassword: strin
     return '';
 };
 
-export const handleSignUp = async (
-    email: string,
-    password: string
-): Promise<void> => {
-    if (!window.Clerk) {
-        throw new Error('Clerk is not initialized.');
-    }
-
-    await window.Clerk.load();
-
-    if (!window.Clerk.client || !window.Clerk.client.signUp) {
-        throw new Error('Clerk client is not available.');
-    }
-
-    await window.Clerk.client.signUp.create({ emailAddress: email, password });
-    await window.Clerk.client.signUp.prepareEmailAddressVerification();
-};
-
 export const isClerkAPIResponseError = (error: any): error is ClerkAPIErrorResponse => {
     return error.clerkError;
 };

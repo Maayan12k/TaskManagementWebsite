@@ -3,6 +3,7 @@ import { SpaceBetweenDirection, SpaceBetweenSize } from "../constants-styles";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { isClerkAPIResponseError } from "./auth/SignUpModel";
+import { useClerk } from "@clerk/clerk-react";
 
 export const EmailVerification = (): JSX.Element => {
     const [emailVerificationCode, setEmailVerificationCode] = useState('');
@@ -10,6 +11,7 @@ export const EmailVerification = (): JSX.Element => {
     const [isError, setIsError] = useState<boolean>(false);
     const [errorMessage, setErrorMessage] = useState('');
     const navigate = useNavigate();
+    const clerk = useClerk();
 
     const Header = (): JSX.Element => (
         <Box>
@@ -22,8 +24,8 @@ export const EmailVerification = (): JSX.Element => {
         setLoading(true);
 
         try {
-            const verify = await window.Clerk.client.signUp.attemptEmailAddressVerification({ code: emailVerificationCode });
-            await window.Clerk.setActive({ session: verify.createdSessionId });
+            const verify = await clerk.client.signUp.attemptEmailAddressVerification({ code: emailVerificationCode });
+            await clerk.setActive({ session: verify.createdSessionId });
             navigate('/dashboard');
 
         } catch (error) {
