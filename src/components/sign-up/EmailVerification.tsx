@@ -2,7 +2,6 @@ import { Alert, Box, Button, Container, Form, FormField, Input, SpaceBetween } f
 import { SpaceBetweenDirection, SpaceBetweenSize } from "../constants-styles";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { useUser } from "@clerk/clerk-react";
 import { isClerkAPIResponseError } from "./auth/SignUpModel";
 
 export const EmailVerification = (): JSX.Element => {
@@ -23,12 +22,9 @@ export const EmailVerification = (): JSX.Element => {
         setLoading(true);
 
         try {
-            const verify = await window.Clerk.client.signUp.attemptEmailAddressVerification({ emailVerificationCode });
+            const verify = await window.Clerk.client.signUp.attemptEmailAddressVerification({ code: emailVerificationCode });
             await window.Clerk.setActive({ session: verify.createdSessionId });
-            const { user, isSignedIn } = useUser();
-            if (isSignedIn) {
-                navigate('/dashboard/' + user.id);
-            }
+            navigate('/dashboard');
 
         } catch (error) {
             console.error(JSON.stringify(error, null, 2));

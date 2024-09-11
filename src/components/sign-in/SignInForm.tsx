@@ -3,7 +3,7 @@ import { useState } from "react";
 import { SpaceBetweenDirection, SpaceBetweenSize } from "../constants-styles/styling-constants";
 import { Link } from "react-router-dom";
 
-export const LogInForm = (): JSX.Element => {
+export const SignInForm = (): JSX.Element => {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
 
@@ -17,23 +17,23 @@ export const LogInForm = (): JSX.Element => {
         const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
         setEmailError(!value ? 'Email is required' : !emailPattern.test(value) ? 'Enter a valid email address' : '');
     };
-    
+
     const validatePassword = (value: string): void => {
         setPassword(value);
         setPasswordError(
             !value
-            ? 'Password is required'
-            : value.length < 6
-            ? 'Password must be at least 6 characters'
-            : ''
+                ? 'Password is required'
+                : value.length < 6
+                    ? 'Password must be at least 6 characters'
+                    : ''
         );
     };
-    
 
-    const Header = ():JSX.Element => {
+
+    const Header = (): JSX.Element => {
         return (
             <Box>
-                <h1>Log In</h1>
+                <h1>Sign In</h1>
             </Box>
         );
     }
@@ -45,19 +45,19 @@ export const LogInForm = (): JSX.Element => {
             // Perform the API logic here, e.g., log in the user
             console.log('User signed up successfully');
             setLoading(true);
-        }else{
+        } else {
             validateEmail(email);
             validatePassword(password);
         }
     }
 
     return (
-        <div style={{width: '40vw'}}>
+        <div style={{ width: '40vw' }}>
             <SpaceBetween size='l' direction='vertical'>
-                <Container 
+                <Container
                     header={<Header />}
                     media={{
-                        content: <img src="/log-in-media.jpg"/>,
+                        content: <img src="/log-in-media.jpg" />,
                         position: "top",
                         width: "25vw",
                         height: "15vh",
@@ -83,7 +83,7 @@ export const LogInForm = (): JSX.Element => {
                                 />
                             </FormField>
                             <SpaceBetween size='m' direction="vertical">
-                                <Button variant="primary" loading={loading} onClick={() => handleSubmit()}>Log In</Button>
+                                <Button variant="primary" loading={loading} onClick={() => handleSubmit()}>Sign In</Button>
                                 <Link to='/sign-up'>Don't have an account? Sign up here!</Link>
                             </SpaceBetween>
                         </SpaceBetween>

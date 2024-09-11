@@ -4,7 +4,7 @@ import { backgroundImageStyle, outerContainerStyle, overlayContainerStyle } from
 import { FeaturesInfo, MainHeader, WhyInfo } from '.'
 import { NavigationBar } from '../NavigationBar'
 
-export const Home = (): JSX.Element => {
+export const HomePage = (): JSX.Element => {
 
     const homeBackground = (): JSX.Element => {
         const imgSrcPath = "/public/home-background.jpg"
@@ -23,9 +23,9 @@ export const Home = (): JSX.Element => {
                 {homeBackground()}
                 <div style={overlayContainerStyle}>
                     <SpaceBetween size={SpaceBetweenSize.large} direction={SpaceBetweenDirection.vertical}>
-                        <MainHeader/>
-                        <FeaturesInfo/>
-                        <WhyInfo/>
+                        <MainHeader />
+                        <FeaturesInfo />
+                        <WhyInfo />
                     </SpaceBetween>
                 </div>
             </div>

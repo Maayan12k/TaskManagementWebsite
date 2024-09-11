@@ -6,97 +6,48 @@ interface NavigationBarProps {
   userLocation?: UserLocation;
 }
 
-export const NavigationBar = ({userLocation}: NavigationBarProps): JSX.Element => {
-  const [navItems, setNavItems] = useState<Utility[]>();
-
-  const dashboardUtils = (): Utility[] => {
-    return [
-      {
-        type: "button",
-        text: "Sign Out",
-        href: "/",
-      },
-    ]
-  }
-
-  const homeUtils = (): Utility[] => {
-    return [
-      {
-        type: "button",
-        text: "Get Started",
-        href: "/sign-up",
-      },
-      {
-        type: "button",
-        variant: "primary-button",
-        text: "Log In",
-        href: "/log-in",
-      },
-    ];
-  };
-
-  const signupUtils = (): Utility[] => {
-    return [
-      {
-        type: "button",
-        text: "Home",
-        href: "/",
-      },
-      {
-        type: "button",
-        variant: "primary-button",
-        text: "Log In",
-        href: "/log-in",
-      },
-    ];
-  }
-
-  const loginUtils = (): Utility[] => {
-    return [
-      {
-        type: "button",
-        text: "Home",
-        href: "/",
-      },
-      {
-        type: "button",
-        variant: "primary-button",
-        text: "Sign Up",
-        href: "/sign-up",
-      },
-    ];
-  }
+export const NavigationBar = ({ userLocation }: NavigationBarProps): JSX.Element => {
+  const [navItems, setNavItems] = useState<Utility[]>([]);
 
   const navBarLogo: Identity = {
     href: "/",
     title: "Good Steward",
     logo: {
       src: "/GS_Logo_No_Text.svg",
-      alt: "Logo"
-    }
-  }
+      alt: "Logo",
+    },
+  };
+
+  const homeButton: Utility = { type: "button", text: "Home", href: "/" };
+  const signInButton: Utility = { type: "button", variant: "primary-button", text: "Sign In", href: "/sign-in" };
+  const signUpButton: Utility = { type: "button", variant: "primary-button", text: "Sign Up", href: "/sign-up" };
+  const getStartedButton: Utility = { type: "button", text: "Get Started", href: "/sign-up" };
+  const signOutButton: Utility = { type: "button", text: "Sign Out", href: "/" };
 
   const renderNavBarUtils = (userLocation?: UserLocation): Utility[] => {
+    const utils: Utility[] = [];
+
     switch (userLocation) {
       case UserLocation.dashboard:
-        return dashboardUtils();
+        utils.push(signOutButton);
+        break;
       case UserLocation.signup:
-        return signupUtils();
+        utils.push(homeButton, signInButton);
+        break;
       case UserLocation.login:
-        return loginUtils();
+        utils.push(homeButton, signUpButton);
+        break;
       default:
-        return homeUtils();
+        utils.push(getStartedButton, signInButton);
+        break;
     }
-  }
+
+    return utils;
+  };
 
   useEffect(() => {
     setNavItems(renderNavBarUtils(userLocation));
-  },[userLocation]);
+  }, [userLocation]);
 
-  return (
-    <TopNavigation
-      identity={navBarLogo}
-      utilities={navItems}
-    />
-  );
-}
+  return <TopNavigation identity={navBarLogo} utilities={navItems} />;
+};

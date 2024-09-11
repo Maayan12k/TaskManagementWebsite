@@ -1,9 +1,9 @@
 import { Container, SpaceBetween } from "@cloudscape-design/components"
 import { backgroundImageStyle, outerContainerStyle, overlayContainerStyle, SpaceBetweenDirection, SpaceBetweenSize, UserLocation } from "../constants-styles"
 import { NavigationBar } from "../NavigationBar"
-import { LogInForm } from "./LogInForm"
+import { SignInForm } from "./SignInForm"
 
-export const LogInPage = (): JSX.Element => {
+export const SignInPage = (): JSX.Element => {
 
     const homeBackground = (): JSX.Element => {
         const imgSrcPath = "/public/sign-in-page-background.jpg"
@@ -22,7 +22,7 @@ export const LogInPage = (): JSX.Element => {
                 {homeBackground()}
                 <div style={overlayContainerStyle}>
                     <Container>
-                        <LogInForm />
+                        <SignInForm />
                     </Container>
                 </div>
             </div>
