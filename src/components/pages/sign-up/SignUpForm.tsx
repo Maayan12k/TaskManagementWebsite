@@ -86,7 +86,7 @@ export const SignUpForm = ({ setCurrentStep }: SignUpFormProps): JSX.Element => 
 
   return (
     <div style={{ width: '50vw' }}>
-      <SpaceBetween size='l' direction='vertical'>
+      <SpaceBetween size={SpaceBetweenSize.large} direction={SpaceBetweenDirection.vertical}>
         <Container header={<Header title={'Sign Up'} />}>
           {isError && <Alert type="warning">{errorMessage}</Alert>}
           <Form>
@@ -128,7 +128,7 @@ export const SignUpForm = ({ setCurrentStep }: SignUpFormProps): JSX.Element => 
                   type="password"
                 />
               </FormField>
-              <SpaceBetween size='m' direction="vertical">
+              <SpaceBetween size='m' direction={SpaceBetweenDirection.vertical}>
                 <Button variant="primary" loading={loading} onClick={() => handleSubmit()}>Create Account</Button>
                 <Link to='/log-in'>Already have an account?</Link>
               </SpaceBetween>

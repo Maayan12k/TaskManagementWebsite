@@ -9,7 +9,7 @@ import { WhyInfo } from './WhyInfo'
 
 export const HomePage = (): JSX.Element => {
     return (
-        <>
+        <div style={{ overflow: 'hidden' }}>
             <NavigationBar />
             <div style={outerContainerStyle}>
                 <Background imgSrcPath="/home-background.jpg" />
@@ -21,6 +21,6 @@ export const HomePage = (): JSX.Element => {
                     </SpaceBetween>
                 </div>
             </div>
-        </>
+        </div>
     )
 }

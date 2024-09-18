@@ -1,9 +1,10 @@
-import { Alert, Box, Button, Container, Form, FormField, Input, SpaceBetween } from "@cloudscape-design/components";
+import { Alert, Button, Container, Form, FormField, Input, SpaceBetween } from "@cloudscape-design/components";
 import { SpaceBetweenDirection, SpaceBetweenSize } from "../constants-styles-types";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useClerk } from "@clerk/clerk-react";
 import { handleEmailVerification } from "./auth/SignUpModel";
+import { Header } from "../shared-components/Header";
 
 export const EmailVerification = (): JSX.Element => {
     const [emailVerificationCode, setEmailVerificationCode] = useState('');
@@ -14,12 +15,6 @@ export const EmailVerification = (): JSX.Element => {
     const navigate = useNavigate();
     const clerk = useClerk();
 
-    const Header = (): JSX.Element => (
-        <Box>
-            <h1>Verify</h1>
-        </Box>
-    );
-
     const handleSubmit = async () => {
         console.log('Email Verification Code:', emailVerificationCode);
         await handleEmailVerification(emailVerificationCode, setIsError, setErrorMessage, setLoading, navigate, clerk);
@@ -27,9 +22,9 @@ export const EmailVerification = (): JSX.Element => {
 
     return (
         <div style={{ width: '50vw' }}>
-            <SpaceBetween size='l' direction='vertical'>
+            <SpaceBetween size={SpaceBetweenSize.large} direction={SpaceBetweenDirection.vertical}>
                 <Container
-                    header={<Header />}
+                    header={<Header title='Verify' />}
                     media={{
                         content: <img src="/email-verification-media.png" />,
                         position: "top",
@@ -48,7 +43,7 @@ export const EmailVerification = (): JSX.Element => {
                                 />
                             </FormField>
 
-                            <SpaceBetween size='m' direction="vertical">
+                            <SpaceBetween size={SpaceBetweenSize.medium} direction={SpaceBetweenDirection.vertical}>
                                 <Button variant="primary" loading={loading} onClick={handleSubmit}>
                                     Verify
                                 </Button>

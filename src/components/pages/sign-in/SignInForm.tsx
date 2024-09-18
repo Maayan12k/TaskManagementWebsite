@@ -1,8 +1,10 @@
-import { Button, Container, Form, FormField, Input, SpaceBetween } from "@cloudscape-design/components";
-import { useState } from "react";
+import { Alert, Button, Container, Form, FormField, Input, SpaceBetween } from "@cloudscape-design/components";
+import { useEffect, useState } from "react";
 import { SpaceBetweenDirection, SpaceBetweenSize } from "../constants-styles-types/styling-constants";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { Header } from "../shared-components/Header";
+import { useClerk } from "@clerk/clerk-react";
+import { handleSignIn } from "./auth/SignInModel";
 
 export const SignInForm = (): JSX.Element => {
     const [email, setEmail] = useState('');
@@ -10,6 +12,12 @@ export const SignInForm = (): JSX.Element => {
     const [emailError, setEmailError] = useState('');
     const [passwordError, setPasswordError] = useState('');
     const [loading, setLoading] = useState(false);
+
+    const [isError, setIsError] = useState<boolean>(false);
+    const [errorMessage, setErrorMessage] = useState('');
+
+    const clerk = useClerk();
+    const navigate = useNavigate();
 
     const validateEmail = (value: string): void => {
         setEmail(value);
@@ -28,18 +36,34 @@ export const SignInForm = (): JSX.Element => {
         );
     };
 
-    const handleSubmit = (): void => {
+    const handleSubmit = async (): Promise<void> => {
         const isFormValid = (): boolean => !!(!emailError && !passwordError && email && password);
 
         if (isFormValid()) {
-            // Perform the API logic here, e.g., log in the user
-            console.log('User signed up successfully');
             setLoading(true);
+            await handleSignIn({
+                email,
+                password,
+                setIsError,
+                setErrorMessage,
+                setLoading,
+                navigate,
+                clerk,
+            });
+            console.log('User signed in successfully');
+            setLoading(false);
+
         } else {
             validateEmail(email);
             validatePassword(password);
         }
     }
+
+    useEffect(() => {
+        if (clerk.user) {
+            navigate('/dashboard');
+        }
+    }, [clerk]);
 
     return (
         <div style={{ width: '40vw' }}>
@@ -52,6 +76,7 @@ export const SignInForm = (): JSX.Element => {
                         width: "25vw",
                         height: "15vh",
                     }}>
+                    {isError && <Alert type="warning">{errorMessage}</Alert>}
                     <Form>
                         <SpaceBetween
                             direction={SpaceBetweenDirection.vertical}
@@ -72,7 +97,7 @@ export const SignInForm = (): JSX.Element => {
                                     type="password"
                                 />
                             </FormField>
-                            <SpaceBetween size='m' direction="vertical">
+                            <SpaceBetween size='m' direction={SpaceBetweenDirection.vertical}>
                                 <Button variant="primary" loading={loading} onClick={() => handleSubmit()}>Sign In</Button>
                                 <Link to='/sign-up'>Don't have an account? Sign up here!</Link>
                             </SpaceBetween>

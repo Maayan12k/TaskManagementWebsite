@@ -49,5 +49,9 @@ export const NavigationBar = ({ userLocation }: NavigationBarProps): JSX.Element
     setNavItems(renderNavBarUtils(userLocation));
   }, [userLocation]);
 
-  return <TopNavigation identity={navBarLogo} utilities={navItems} />;
+  return (
+    <div id="h" style={{ position: 'sticky', top: 0, zIndex: 1002 }}>
+      <TopNavigation identity={navBarLogo} utilities={navItems} />
+    </div>
+  )
 };
