@@ -1,12 +1,10 @@
-// SignUpForm.tsx
-
 import { Alert, Box, Button, Container, Form, FormField, Input, SpaceBetween } from "@cloudscape-design/components";
 import { useState } from "react";
 import { Link } from "react-router-dom";
-import { SignUpStep, SpaceBetweenDirection, SpaceBetweenSize } from "../constants-styles";
+import { SignUpStep, SpaceBetweenDirection, SpaceBetweenSize } from "../constants-styles-types";
 import { useClerk } from "@clerk/clerk-react";
-import { validateConfirmPassword, validateEmail, validateFirstName, validateLastName, validatePassword } from "./auth/SignUpModel";
-import { handleSignUp } from "./auth/SignUpController";
+import { handleSignUp } from "./auth/SignUpModel";
+import { Header } from "../shared-components/Header";
 
 interface SignUpFormProps {
   setCurrentStep: React.Dispatch<React.SetStateAction<SignUpStep>>;
@@ -54,16 +52,42 @@ export const SignUpForm = ({ setCurrentStep }: SignUpFormProps): JSX.Element => 
     }
   };
 
-  const Header = (): JSX.Element => (
-    <Box>
-      <h1>Sign Up</h1>
-    </Box>
-  );
+  const validateFirstName = (value: string): string => {
+    setFirstName(value);
+    return value ? '' : 'First name is required';
+  };
+
+  const validateLastName = (value: string): string => {
+    setLastName(value);
+    return value ? '' : 'Last name is required';
+  };
+
+  const validateEmail = (value: string): string => {
+    setEmail(value);
+    const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!value) return 'Email is required';
+    if (!emailPattern.test(value)) return 'Enter a valid email address';
+    return '';
+  };
+
+  const validatePassword = (value: string): string => {
+    setPassword(value);
+    if (!value) return 'Password is required';
+    if (value.length < 6) return 'Password must be at least 6 characters';
+    return '';
+  };
+
+  const validateConfirmPassword = (password: string, confirmPassword: string): string => {
+    setConfirmPassword(confirmPassword);
+    if (!confirmPassword) return 'Confirm password is required';
+    if (confirmPassword !== password) return 'Passwords do not match';
+    return '';
+  };
 
   return (
     <div style={{ width: '50vw' }}>
-      <SpaceBetween size='l' direction='vertical'>
-        <Container header={<Header />}>
+      <SpaceBetween size={SpaceBetweenSize.large} direction={SpaceBetweenDirection.vertical}>
+        <Container header={<Header title={'Sign Up'} />}>
           {isError && <Alert type="warning">{errorMessage}</Alert>}
           <Form>
             <SpaceBetween direction={SpaceBetweenDirection.vertical} size={SpaceBetweenSize.medium}>
@@ -71,32 +95,28 @@ export const SignUpForm = ({ setCurrentStep }: SignUpFormProps): JSX.Element => 
                 <Input
                   placeholder="First name"
                   value={firstName}
-                  onChange={({ detail }) => setFirstName(detail.value)}
-                  onBlur={() => setFirstNameError(validateFirstName(firstName))}
+                  onChange={({ detail }) => setFirstNameError(validateFirstName(detail.value))}
                 />
               </FormField>
               <FormField label="Last Name" stretch errorText={lastNameError}>
                 <Input
                   placeholder="Last name"
                   value={lastName}
-                  onChange={({ detail }) => setLastName(detail.value)}
-                  onBlur={() => setLastNameError(validateLastName(lastName))}
+                  onChange={({ detail }) => setLastNameError(validateLastName(detail.value))}
                 />
               </FormField>
               <FormField label="Email Address" stretch errorText={emailError}>
                 <Input
                   placeholder="Enter your email"
                   value={email}
-                  onChange={({ detail }) => setEmail(detail.value)}
-                  onBlur={() => setEmailError(validateEmail(email))}
+                  onChange={({ detail }) => setEmailError(validateEmail(detail.value))}
                 />
               </FormField>
               <FormField label="Password" stretch errorText={passwordError}>
                 <Input
                   placeholder="Enter your password"
                   value={password}
-                  onChange={({ detail }) => setPassword(detail.value)}
-                  onBlur={() => setPasswordError(validatePassword(password))}
+                  onChange={({ detail }) => setPasswordError(validatePassword(detail.value))}
                   type="password"
                 />
               </FormField>
@@ -104,12 +124,11 @@ export const SignUpForm = ({ setCurrentStep }: SignUpFormProps): JSX.Element => 
                 <Input
                   placeholder="Confirm password"
                   value={confirmPassword}
-                  onChange={({ detail }) => setConfirmPassword(detail.value)}
-                  onBlur={() => setConfirmPasswordError(validateConfirmPassword(password, confirmPassword))}
+                  onChange={({ detail }) => setConfirmPasswordError(validateConfirmPassword(password, detail.value))}
                   type="password"
                 />
               </FormField>
-              <SpaceBetween size='m' direction="vertical">
+              <SpaceBetween size='m' direction={SpaceBetweenDirection.vertical}>
                 <Button variant="primary" loading={loading} onClick={() => handleSubmit()}>Create Account</Button>
                 <Link to='/log-in'>Already have an account?</Link>
               </SpaceBetween>

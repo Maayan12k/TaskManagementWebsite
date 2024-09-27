@@ -16,7 +16,7 @@ export const MainHeader = (): JSX.Element => {
                 </Box>
                 <SpaceBetween direction="horizontal" size="xs">
                     <Button variant="primary" href='/sign-up'>Get Started </Button>
-                    <Button variant='normal' href='/log-in'>Sign In</Button>
+                    <Button variant='normal' href='/sign-in'>Sign In</Button>
                 </SpaceBetween>
             </Box>
         </Container>

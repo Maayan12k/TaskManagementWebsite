@@ -1,16 +1,25 @@
-import { Box, Button, Container, Form, FormField, Input, SpaceBetween } from "@cloudscape-design/components";
-import { useState } from "react";
-import { SpaceBetweenDirection, SpaceBetweenSize } from "../constants-styles/styling-constants";
-import { Link } from "react-router-dom";
+import { Alert, Button, Container, Form, FormField, Input, SpaceBetween } from "@cloudscape-design/components";
+import { useEffect, useState } from "react";
+import { SpaceBetweenDirection, SpaceBetweenSize } from "../constants-styles-types/styling-constants";
+import { Link, useNavigate } from "react-router-dom";
+import { Header } from "../shared-components/Header";
+import { useClerk, useSession } from "@clerk/clerk-react";
+import { handleSignIn } from "./auth/SignInModel";
 
 export const SignInForm = (): JSX.Element => {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
-
     const [emailError, setEmailError] = useState('');
     const [passwordError, setPasswordError] = useState('');
-
     const [loading, setLoading] = useState(false);
+
+    const [isError, setIsError] = useState<boolean>(false);
+    const [errorMessage, setErrorMessage] = useState('');
+
+    const clerk = useClerk();
+    const session = useSession();
+    const navigate = useNavigate();
+
 
     const validateEmail = (value: string): void => {
         setEmail(value);
@@ -29,39 +38,52 @@ export const SignInForm = (): JSX.Element => {
         );
     };
 
-
-    const Header = (): JSX.Element => {
-        return (
-            <Box>
-                <h1>Sign In</h1>
-            </Box>
-        );
-    }
-
-    const handleSubmit = (): void => {
+    const handleSubmit = async (): Promise<void> => {
         const isFormValid = (): boolean => !!(!emailError && !passwordError && email && password);
 
         if (isFormValid()) {
-            // Perform the API logic here, e.g., log in the user
-            console.log('User signed up successfully');
             setLoading(true);
+            if (!session.isSignedIn) {
+                await handleSignIn({
+                    email,
+                    password,
+                    setIsError,
+                    setErrorMessage,
+                    setLoading,
+                    navigate,
+                    clerk,
+                });
+                console.log('User signed in successfully');
+                setLoading(false);
+            } else {
+                console.log('User already signed in');
+                navigate('/dashboard');
+            }
+
         } else {
             validateEmail(email);
             validatePassword(password);
         }
     }
 
+    useEffect(() => {
+        if (session.isSignedIn) {
+            navigate('/dashboard');
+        }
+    }, [session]);
+
     return (
         <div style={{ width: '40vw' }}>
-            <SpaceBetween size='l' direction='vertical'>
+            <SpaceBetween size={SpaceBetweenSize.large} direction={SpaceBetweenDirection.vertical}>
                 <Container
-                    header={<Header />}
+                    header={<Header title={'Sign In'} />}
                     media={{
                         content: <img src="/log-in-media.jpg" />,
                         position: "top",
                         width: "25vw",
                         height: "15vh",
                     }}>
+                    {isError && <Alert type="warning">{errorMessage}</Alert>}
                     <Form>
                         <SpaceBetween
                             direction={SpaceBetweenDirection.vertical}
@@ -82,7 +104,7 @@ export const SignInForm = (): JSX.Element => {
                                     type="password"
                                 />
                             </FormField>
-                            <SpaceBetween size='m' direction="vertical">
+                            <SpaceBetween size='m' direction={SpaceBetweenDirection.vertical}>
                                 <Button variant="primary" loading={loading} onClick={() => handleSubmit()}>Sign In</Button>
                                 <Link to='/sign-up'>Don't have an account? Sign up here!</Link>
                             </SpaceBetween>
