@@ -3,7 +3,7 @@ import { useEffect, useState } from "react";
 import { SpaceBetweenDirection, SpaceBetweenSize } from "../constants-styles-types/styling-constants";
 import { Link, useNavigate } from "react-router-dom";
 import { Header } from "../shared-components/Header";
-import { useClerk } from "@clerk/clerk-react";
+import { useClerk, useSession } from "@clerk/clerk-react";
 import { handleSignIn } from "./auth/SignInModel";
 
 export const SignInForm = (): JSX.Element => {
@@ -17,7 +17,9 @@ export const SignInForm = (): JSX.Element => {
     const [errorMessage, setErrorMessage] = useState('');
 
     const clerk = useClerk();
+    const session = useSession();
     const navigate = useNavigate();
+
 
     const validateEmail = (value: string): void => {
         setEmail(value);
@@ -41,17 +43,22 @@ export const SignInForm = (): JSX.Element => {
 
         if (isFormValid()) {
             setLoading(true);
-            await handleSignIn({
-                email,
-                password,
-                setIsError,
-                setErrorMessage,
-                setLoading,
-                navigate,
-                clerk,
-            });
-            console.log('User signed in successfully');
-            setLoading(false);
+            if (!session.isSignedIn) {
+                await handleSignIn({
+                    email,
+                    password,
+                    setIsError,
+                    setErrorMessage,
+                    setLoading,
+                    navigate,
+                    clerk,
+                });
+                console.log('User signed in successfully');
+                setLoading(false);
+            } else {
+                console.log('User already signed in');
+                navigate('/dashboard');
+            }
 
         } else {
             validateEmail(email);
@@ -60,10 +67,10 @@ export const SignInForm = (): JSX.Element => {
     }
 
     useEffect(() => {
-        if (clerk.user) {
+        if (session.isSignedIn) {
             navigate('/dashboard');
         }
-    }, [clerk]);
+    }, [session]);
 
     return (
         <div style={{ width: '40vw' }}>

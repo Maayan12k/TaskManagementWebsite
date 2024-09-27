@@ -5,6 +5,7 @@ import {
     Cards,
     Header,
     Link,
+    Modal,
     Pagination,
     SideNavigation,
     SpaceBetween,
@@ -14,20 +15,42 @@ import { useState } from "react";
 import { NavigationBar } from "../shared-components/NavigationBar";
 import { itemsProject1, itemsProject2 } from "./mock-data";
 import { UserLocation } from "../constants-styles-types";
+import { useClerk } from "@clerk/clerk-react";
 
 export const DashboardPage = (): JSX.Element => {
     const [selectedProject, setSelectedProject] = useState<string>("Project #1");
+    const [isSignOutConfirmOpen, setIsSignOutConfirmOpen] = useState<boolean>(false);
+    const [loading, setLoading] = useState<boolean>(false);
+    const clerk = useClerk();
 
-    const handleNavigationClick = (event: any) => {
-        setSelectedProject(event.detail.text);
+    const handleNavigationClick = (event: any) => setSelectedProject(event.detail.text);
+
+    const selectedItems = selectedProject === "Project #1" ? itemsProject1 : itemsProject2;
+
+    const handleSignOutConfirmClick = () => {
+        setLoading(true);
+        clerk.signOut();
     };
-
-    const selectedItems =
-        selectedProject === "Project #1" ? itemsProject1 : itemsProject2;
 
     return (
         <>
-            <NavigationBar userLocation={UserLocation.dashboard} />
+            <NavigationBar userLocation={UserLocation.dashboard} setIsSignOutConfirmOpen={setIsSignOutConfirmOpen} />
+            <Modal
+                visible={isSignOutConfirmOpen}
+                onDismiss={() => setIsSignOutConfirmOpen(false)}
+                header='Confirm Sign Out?'
+                size="medium"
+                footer={
+                    <Box float="right">
+                        <SpaceBetween direction="horizontal" size="xs">
+                            <Button variant="link" onClick={() => setIsSignOutConfirmOpen(false)}>Cancel</Button>
+                            <Button variant="primary" loading={loading} onClick={() => handleSignOutConfirmClick()}>Sign Out</Button>
+                        </SpaceBetween>
+                    </Box>
+                }
+            >
+                Are you sure you want to sign out?
+            </Modal>
             <AppLayout
                 headerSelector="#h"
                 navigation={
@@ -40,6 +63,7 @@ export const DashboardPage = (): JSX.Element => {
                         items={[
                             { type: "link", text: `Project #1`, href: "#" },
                             { type: "link", text: `Project #2`, href: "#" },
+                            { type: 'link', text: 'New Project', href: '#' }
                         ]}
                     />
                 }
@@ -82,8 +106,8 @@ export const DashboardPage = (): JSX.Element => {
                         empty={
                             <Box margin={{ vertical: "xs" }} textAlign="center" color="inherit">
                                 <SpaceBetween size="m">
-                                    <b>No resources</b>
-                                    <Button>Create resource</Button>
+                                    <b>No Projects</b>
+                                    <Button>Create Project</Button>
                                 </SpaceBetween>
                             </Box>
                         }

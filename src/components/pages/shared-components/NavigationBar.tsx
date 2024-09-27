@@ -4,9 +4,10 @@ import { Identity, UserLocation, Utility } from "../constants-styles-types/styli
 
 interface NavigationBarProps {
   userLocation?: UserLocation;
+  setIsSignOutConfirmOpen?: React.Dispatch<React.SetStateAction<boolean>>;
 }
 
-export const NavigationBar = ({ userLocation }: NavigationBarProps): JSX.Element => {
+export const NavigationBar = ({ userLocation, setIsSignOutConfirmOpen }: NavigationBarProps): JSX.Element => {
   const [navItems, setNavItems] = useState<Utility[]>([]);
 
   const navBarLogo: Identity = {
@@ -18,11 +19,22 @@ export const NavigationBar = ({ userLocation }: NavigationBarProps): JSX.Element
     },
   };
 
+  const handleSignOutButtonClick = () => {
+    console.log('signing out')
+    if (setIsSignOutConfirmOpen)
+      setIsSignOutConfirmOpen(true);
+  };
+
   const homeButton: Utility = { type: "button", text: "Home", href: "/" };
   const signInButton: Utility = { type: "button", variant: "primary-button", text: "Sign In", href: "/sign-in" };
   const signUpButton: Utility = { type: "button", variant: "primary-button", text: "Sign Up", href: "/sign-up" };
   const getStartedButton: Utility = { type: "button", text: "Get Started", href: "/sign-up" };
-  const signOutButton: Utility = { type: "button", text: "Sign Out", href: "/" };
+  const signOutButton: Utility = {
+    type: "button",
+    variant: 'primary-button',
+    text: "Sign Out",
+    onClick: handleSignOutButtonClick,
+  };
 
   const renderNavBarUtils = (userLocation?: UserLocation): Utility[] => {
     const utils: Utility[] = [];

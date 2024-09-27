@@ -1,7 +1,7 @@
 // Define items for Project #1 with 7 items
 export const itemsProject1 = [
     {
-        name: "Item 1",
+        name: "Item 123",
         alt: "First",
         description: "This is the first item of Project #1",
         type: "1A",
