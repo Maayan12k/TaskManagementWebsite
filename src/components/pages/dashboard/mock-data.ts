@@ -1,4 +1,6 @@
 // Define items for Project #1 with 7 items
+
+
 export const itemsProject1 = [
     {
         name: "Item 123",
@@ -135,3 +137,10 @@ export const itemsProject2 = [
         size: "Medium",
     },
 ];
+
+export const exampleDashboard = {
+    projects: [
+        itemsProject1,
+        itemsProject2,
+    ]
+}

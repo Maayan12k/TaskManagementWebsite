@@ -63,7 +63,7 @@ export const DashboardPage = (): JSX.Element => {
                         items={[
                             { type: "link", text: `Project #1`, href: "#" },
                             { type: "link", text: `Project #2`, href: "#" },
-                            { type: 'link', text: 'New Project', href: '#' }
+                            { type: "link", text: 'New Project', href: '#' }
                         ]}
                     />
                 }
