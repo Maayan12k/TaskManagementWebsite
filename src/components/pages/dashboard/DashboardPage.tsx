@@ -20,28 +20,43 @@ import { useClerk } from "@clerk/clerk-react";
 export const DashboardPage = (): JSX.Element => {
     const [selectedProject, setSelectedProject] = useState<string>("Project #1");
     const [isSignOutConfirmOpen, setIsSignOutConfirmOpen] = useState<boolean>(false);
+    const [isCreateNewProjectOpen, setIsCreateNewProjectOpen] = useState<boolean>(false);
     const [loading, setLoading] = useState<boolean>(false);
+    const [isNewUser, setIsNewUser] = useState<boolean>(false);
     const [navigationItems, setNavigationItems] = useState<any[]>([]);
 
     const clerk = useClerk();
 
     const handleNavigationClick = (event: any) => setSelectedProject(event.detail.text);
 
-    const selectedItems =
-        selectedProject === "Project #1" ? exampleDashboard.projects[0] : selectedProject === "Project #2" ? exampleDashboard.projects[1] : [];
+    const selectedItems = isNewUser
+        ? []
+        : selectedProject === "Project #1"
+            ? exampleDashboard.projects[0]
+            : selectedProject === "Project #2"
+                ? exampleDashboard.projects[1]
+                : [];
 
     useEffect(() => {
         // Simulate data fetching
         const fetchProjects = async () => {
             // Fetch projects data from mock file (or an API in a real app)
-            const projects = exampleDashboard.projects;
-            const formattedItems = projects.map((_, index) => ({
-                type: "link",
-                text: `Project #${index + 1}`,
-                href: "#",
-            }));
-            formattedItems.push({ type: "link", text: "New Project", href: "#" });
-            setNavigationItems(formattedItems);
+
+            let newUser = true;
+
+            if (!newUser) {
+                const projects = exampleDashboard.projects;
+                const formattedItems = projects.map((_, index) => ({
+                    type: "link",
+                    text: `Project #${index + 1}`,
+                    href: "#",
+                }));
+                setNavigationItems(formattedItems);
+            } else {
+                setNavigationItems([]);
+                setIsNewUser(true);
+
+            }
         };
 
         fetchProjects();
@@ -61,7 +76,23 @@ export const DashboardPage = (): JSX.Element => {
 
     return (
         <>
-            <NavigationBar userLocation={UserLocation.dashboard} setIsSignOutConfirmOpen={setIsSignOutConfirmOpen} />
+            <NavigationBar userLocation={UserLocation.dashboard} setIsSignOutConfirmOpen={setIsSignOutConfirmOpen} setIsCreateNewProjectOpen={setIsCreateNewProjectOpen} />
+            <Modal
+                visible={isCreateNewProjectOpen}
+                onDismiss={() => setIsCreateNewProjectOpen(false)}
+                header='Create New Project'
+                size="medium"
+                footer={
+                    <Box float="right">
+                        <SpaceBetween direction="horizontal" size="xs">
+                            <Button variant="link" onClick={() => setIsSignOutConfirmOpen(false)}>Cancel</Button>
+                            <Button variant="primary" loading={loading} onClick={() => handleSignOutConfirmClick()}>Sign Out</Button>
+                        </SpaceBetween>
+                    </Box>
+                }
+            >
+                Are you sure you want to sign out?
+            </Modal>
             <Modal
                 visible={isSignOutConfirmOpen}
                 onDismiss={() => setIsSignOutConfirmOpen(false)}
@@ -90,6 +121,7 @@ export const DashboardPage = (): JSX.Element => {
                         items={navigationItems}
                     />
                 }
+                navigationHide={isNewUser}
                 toolsHide={true}
                 content={
                     <Cards
@@ -130,13 +162,13 @@ export const DashboardPage = (): JSX.Element => {
                             <Box margin={{ vertical: "xs" }} textAlign="center" color="inherit">
                                 <SpaceBetween size="m">
                                     <b>No Projects</b>
-                                    <Button>Create Project</Button>
+                                    <Button onClick={() => setIsCreateNewProjectOpen(true)}>Create Project</Button>
                                 </SpaceBetween>
                             </Box>
                         }
-                        filter={<TextFilter filteringPlaceholder="Find resources" filteringText="" />}
-                        header={<Header variant="awsui-h1-sticky">{selectedProject} </Header>}
-                        pagination={<Pagination currentPageIndex={1} pagesCount={2} />}
+                        filter={!isNewUser && <TextFilter filteringPlaceholder="Find resources" filteringText="" />}
+                        header={!isNewUser && <Header variant="awsui-h1-sticky">{selectedProject} </Header>}
+                        pagination={!isNewUser && <Pagination currentPageIndex={1} pagesCount={2} />}
                     />
                 }
             />

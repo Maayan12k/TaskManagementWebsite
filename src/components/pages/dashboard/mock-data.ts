@@ -1,6 +1,3 @@
-// Define items for Project #1 with 7 items
-
-
 export const itemsProject1 = [
     {
         name: "Item 123",
