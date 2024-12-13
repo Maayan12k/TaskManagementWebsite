@@ -10,18 +10,29 @@ import {
     SideNavigation,
     SpaceBetween,
     TextFilter,
+    Form,
+    Container,
+    FormField,
+    Input,
+    Alert,
 } from "@cloudscape-design/components";
 import { useState, useEffect } from "react";
 import { NavigationBar } from "../shared-components/NavigationBar";
 import { exampleDashboard } from "./mock-data";
 import { UserLocation } from "../constants-styles-types";
 import { useClerk } from "@clerk/clerk-react";
+import { CreateNewProjectModal } from "./CreateNewProjectModal";
+import { SignOutConfirmModal } from "./SignOutConfirmModal";
+import { CreateNewTaskModal } from "./CreateNewTaskModal";
 
 export const DashboardPage = (): JSX.Element => {
     const [selectedProject, setSelectedProject] = useState<string>("Project #1");
     const [isSignOutConfirmOpen, setIsSignOutConfirmOpen] = useState<boolean>(false);
     const [isCreateNewProjectOpen, setIsCreateNewProjectOpen] = useState<boolean>(false);
-    const [loading, setLoading] = useState<boolean>(false);
+    const [isCreateNewTaskOpen, setIsCreateNewTaskOpen] = useState<boolean>(false);
+    const [isCreateNewTaskConfirmLoading, setIsCreateNewTaskConfirmLoading] = useState<boolean>(false);
+    const [isSignOutLoading, setIsSignOutLoading] = useState<boolean>(false);
+    const [isCreateNewProjectConfirmLoading, setIsCreateNewProjectConfirmLoading] = useState<boolean>(false);
     const [isNewUser, setIsNewUser] = useState<boolean>(false);
     const [navigationItems, setNavigationItems] = useState<any[]>([]);
 
@@ -42,7 +53,7 @@ export const DashboardPage = (): JSX.Element => {
         const fetchProjects = async () => {
             // Fetch projects data from mock file (or an API in a real app)
 
-            let newUser = true;
+            let newUser = false;
 
             if (!newUser) {
                 const projects = exampleDashboard.projects;
@@ -63,9 +74,19 @@ export const DashboardPage = (): JSX.Element => {
     }, []);
 
     const handleSignOutConfirmClick = () => {
-        setLoading(true);
+        setIsSignOutLoading(true);
         clerk.signOut();
     };
+
+    const handleCreateNewProjectConfirmClick = () => {
+        setIsCreateNewProjectConfirmLoading(true);
+        // Create new project
+    }
+
+    const handleCreateNewTaskConfirmClick = () => {
+        setIsCreateNewTaskConfirmLoading(true);
+        // Create new task
+    }
 
     type Item = {
         name: string;
@@ -76,39 +97,35 @@ export const DashboardPage = (): JSX.Element => {
 
     return (
         <>
-            <NavigationBar userLocation={UserLocation.dashboard} setIsSignOutConfirmOpen={setIsSignOutConfirmOpen} setIsCreateNewProjectOpen={setIsCreateNewProjectOpen} />
-            <Modal
+            <NavigationBar
+                userLocation={UserLocation.dashboard}
+                setIsSignOutConfirmOpen={setIsSignOutConfirmOpen}
+                setIsCreateNewProjectOpen={setIsCreateNewProjectOpen}
+                setIsCreateNewTaskOpen={setIsCreateNewTaskOpen}
+            />
+
+            <CreateNewTaskModal
+                visible={isCreateNewTaskOpen}
+                onDismiss={() => setIsCreateNewTaskOpen(false)}
+                onCreate={handleCreateNewTaskConfirmClick}
+                loading={isCreateNewTaskConfirmLoading}
+            />
+
+            <CreateNewProjectModal
                 visible={isCreateNewProjectOpen}
                 onDismiss={() => setIsCreateNewProjectOpen(false)}
-                header='Create New Project'
-                size="medium"
-                footer={
-                    <Box float="right">
-                        <SpaceBetween direction="horizontal" size="xs">
-                            <Button variant="link" onClick={() => setIsSignOutConfirmOpen(false)}>Cancel</Button>
-                            <Button variant="primary" loading={loading} onClick={() => handleSignOutConfirmClick()}>Sign Out</Button>
-                        </SpaceBetween>
-                    </Box>
-                }
-            >
-                Are you sure you want to sign out?
-            </Modal>
-            <Modal
+                onCreate={handleCreateNewProjectConfirmClick}
+                loading={isCreateNewProjectConfirmLoading}
+            />
+
+            <SignOutConfirmModal
                 visible={isSignOutConfirmOpen}
                 onDismiss={() => setIsSignOutConfirmOpen(false)}
-                header='Confirm Sign Out?'
-                size="medium"
-                footer={
-                    <Box float="right">
-                        <SpaceBetween direction="horizontal" size="xs">
-                            <Button variant="link" onClick={() => setIsSignOutConfirmOpen(false)}>Cancel</Button>
-                            <Button variant="primary" loading={loading} onClick={() => handleSignOutConfirmClick()}>Sign Out</Button>
-                        </SpaceBetween>
-                    </Box>
-                }
-            >
-                Are you sure you want to sign out?
-            </Modal>
+                onConfirm={handleSignOutConfirmClick}
+                loading={isSignOutLoading}
+            />
+
+
             <AppLayout
                 headerSelector="#h"
                 navigation={
