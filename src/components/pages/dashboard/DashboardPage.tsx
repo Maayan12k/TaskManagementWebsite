@@ -11,9 +11,9 @@ import {
     SpaceBetween,
     TextFilter,
 } from "@cloudscape-design/components";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { NavigationBar } from "../shared-components/NavigationBar";
-import { itemsProject1, itemsProject2 } from "./mock-data";
+import { exampleDashboard } from "./mock-data";
 import { UserLocation } from "../constants-styles-types";
 import { useClerk } from "@clerk/clerk-react";
 
@@ -21,15 +21,42 @@ export const DashboardPage = (): JSX.Element => {
     const [selectedProject, setSelectedProject] = useState<string>("Project #1");
     const [isSignOutConfirmOpen, setIsSignOutConfirmOpen] = useState<boolean>(false);
     const [loading, setLoading] = useState<boolean>(false);
+    const [navigationItems, setNavigationItems] = useState<any[]>([]);
+
     const clerk = useClerk();
 
     const handleNavigationClick = (event: any) => setSelectedProject(event.detail.text);
 
-    const selectedItems = selectedProject === "Project #1" ? itemsProject1 : itemsProject2;
+    const selectedItems =
+        selectedProject === "Project #1" ? exampleDashboard.projects[0] : selectedProject === "Project #2" ? exampleDashboard.projects[1] : [];
+
+    useEffect(() => {
+        // Simulate data fetching
+        const fetchProjects = async () => {
+            // Fetch projects data from mock file (or an API in a real app)
+            const projects = exampleDashboard.projects;
+            const formattedItems = projects.map((_, index) => ({
+                type: "link",
+                text: `Project #${index + 1}`,
+                href: "#",
+            }));
+            formattedItems.push({ type: "link", text: "New Project", href: "#" });
+            setNavigationItems(formattedItems);
+        };
+
+        fetchProjects();
+    }, []);
 
     const handleSignOutConfirmClick = () => {
         setLoading(true);
         clerk.signOut();
+    };
+
+    type Item = {
+        name: string;
+        description: string;
+        type: string;
+        size: string;
     };
 
     return (
@@ -60,11 +87,7 @@ export const DashboardPage = (): JSX.Element => {
                             text: "Projects",
                         }}
                         onFollow={handleNavigationClick}
-                        items={[
-                            { type: "link", text: `Project #1`, href: "#" },
-                            { type: "link", text: `Project #2`, href: "#" },
-                            { type: "link", text: 'New Project', href: '#' }
-                        ]}
+                        items={navigationItems}
                     />
                 }
                 toolsHide={true}
@@ -75,7 +98,7 @@ export const DashboardPage = (): JSX.Element => {
                             selectionGroupLabel: "Item selection",
                         }}
                         cardDefinition={{
-                            header: (item) => (
+                            header: (item: Item) => (
                                 <Link href="#" fontSize="heading-m">
                                     {item.name}
                                 </Link>
@@ -120,3 +143,4 @@ export const DashboardPage = (): JSX.Element => {
         </>
     );
 };
+
