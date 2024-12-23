@@ -1,13 +1,16 @@
 import { Modal, Box, SpaceBetween, Button, Container, Alert, FormField, Input } from "@cloudscape-design/components";
+import { SetStateAction } from "react";
 
 interface CreateNewProjectModalProps {
     visible: boolean;
     onDismiss: () => void;
     onCreate: () => void;
     loading: boolean;
+    projectName: string;
+    setNewProjectName: React.Dispatch<React.SetStateAction<string>>;
 }
 
-export const CreateNewProjectModal = ({ visible, onDismiss, onCreate, loading }: CreateNewProjectModalProps): JSX.Element => {
+export const CreateNewProjectModal = ({ visible, onDismiss, onCreate, loading, projectName, setNewProjectName }: CreateNewProjectModalProps): JSX.Element => {
     return (
         <Modal
             visible={visible}
@@ -33,7 +36,7 @@ export const CreateNewProjectModal = ({ visible, onDismiss, onCreate, loading }:
                         Note: Project names must be unique.
                     </Alert>
                     <FormField label="Project Name">
-                        <Input value={""} />
+                        <Input value={projectName} onChange={({ detail }) => setNewProjectName(detail.value)} />
                     </FormField>
                 </SpaceBetween>
             </Container>

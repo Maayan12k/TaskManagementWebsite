@@ -5,16 +5,10 @@ import {
     Cards,
     Header,
     Link,
-    Modal,
     Pagination,
     SideNavigation,
     SpaceBetween,
     TextFilter,
-    Form,
-    Container,
-    FormField,
-    Input,
-    Alert,
 } from "@cloudscape-design/components";
 import { useState, useEffect } from "react";
 import { NavigationBar } from "../shared-components/NavigationBar";
@@ -24,6 +18,7 @@ import { useClerk } from "@clerk/clerk-react";
 import { CreateNewProjectModal } from "./CreateNewProjectModal";
 import { SignOutConfirmModal } from "./SignOutConfirmModal";
 import { CreateNewTaskModal } from "./CreateNewTaskModal";
+import axios from "axios";
 
 export const DashboardPage = (): JSX.Element => {
     const [selectedProject, setSelectedProject] = useState<string>("Project #1");
@@ -33,8 +28,10 @@ export const DashboardPage = (): JSX.Element => {
     const [isCreateNewTaskConfirmLoading, setIsCreateNewTaskConfirmLoading] = useState<boolean>(false);
     const [isSignOutLoading, setIsSignOutLoading] = useState<boolean>(false);
     const [isCreateNewProjectConfirmLoading, setIsCreateNewProjectConfirmLoading] = useState<boolean>(false);
+    const [isCardsLoading, setIsCardsLoading] = useState<boolean>(false);
     const [isNewUser, setIsNewUser] = useState<boolean>(false);
     const [navigationItems, setNavigationItems] = useState<any[]>([]);
+    const [newProjectName, setNewProjectName] = useState<string>("");
 
     const clerk = useClerk();
 
@@ -49,28 +46,33 @@ export const DashboardPage = (): JSX.Element => {
                 : [];
 
     useEffect(() => {
-        // Simulate data fetching
-        const fetchProjects = async () => {
-            // Fetch projects data from mock file (or an API in a real app)
+        const fetchUsers = async () => {
+            try {
+                // Set loading state to true
+                setIsCardsLoading(true);
 
-            let newUser = false;
+                // Make HTTP GET request to the 'get users' endpoint
+                const response = await axios.get("http://localhost:8080/users");
 
-            if (!newUser) {
-                const projects = exampleDashboard.projects;
-                const formattedItems = projects.map((_, index) => ({
-                    type: "link",
-                    text: `Project #${index + 1}`,
-                    href: "#",
-                }));
-                setNavigationItems(formattedItems);
-            } else {
-                setNavigationItems([]);
-                setIsNewUser(true);
+                // Log the response to the console
+                console.log("Fetched Users:", response.data);
 
+                // Example: You can also format and use the data as needed
+                // const formattedItems = response.data.map((user) => ({
+                //     type: "link",
+                //     text: `User: ${user.name}`,
+                //     href: "#",
+                // }));
+                // setNavigationItems(formattedItems);
+            } catch (error) {
+                console.error("Error fetching users:", error);
+            } finally {
+                // Set loading state to false
+                setIsCardsLoading(false);
             }
         };
 
-        fetchProjects();
+        fetchUsers();
     }, []);
 
     const handleSignOutConfirmClick = () => {
@@ -116,6 +118,8 @@ export const DashboardPage = (): JSX.Element => {
                 onDismiss={() => setIsCreateNewProjectOpen(false)}
                 onCreate={handleCreateNewProjectConfirmClick}
                 loading={isCreateNewProjectConfirmLoading}
+                projectName={newProjectName}
+                setNewProjectName={setNewProjectName}
             />
 
             <SignOutConfirmModal
@@ -148,7 +152,7 @@ export const DashboardPage = (): JSX.Element => {
                         }}
                         cardDefinition={{
                             header: (item: Item) => (
-                                <Link href="#" fontSize="heading-m">
+                                <Link href="" fontSize="heading-m">
                                     {item.name}
                                 </Link>
                             ),
@@ -172,6 +176,7 @@ export const DashboardPage = (): JSX.Element => {
                         }}
                         cardsPerRow={[{ cards: 1 }, { minWidth: 500, cards: 2 }]}
                         items={selectedItems}
+                        loading={isCardsLoading}
                         loadingText="Loading resources"
                         stickyHeader
                         variant="full-page"
@@ -189,6 +194,8 @@ export const DashboardPage = (): JSX.Element => {
                     />
                 }
             />
+
+
         </>
     );
 };
