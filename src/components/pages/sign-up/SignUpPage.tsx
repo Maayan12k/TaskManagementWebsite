@@ -1,5 +1,5 @@
 import { Container } from "@cloudscape-design/components"
-import { backgroundImageStyle, outerContainerStyle, overlayContainerStyle, SignUpStep, SpaceBetweenDirection, SpaceBetweenSize, UserLocation } from "../constants-styles-types"
+import { outerContainerStyle, overlayContainerStyle, SignUpStep, UserLocation } from "../constants-styles-types"
 import { NavigationBar } from "../shared-components/NavigationBar"
 import { SignUpForm } from "./SignUpForm"
 import { EmailVerification } from "./EmailVerification"
@@ -8,13 +8,15 @@ import { Background } from "../shared-components/Background"
 
 export const SignUpPage = (): JSX.Element => {
     const [currentStep, setCurrentStep] = useState<SignUpStep>(SignUpStep.SignUp);
+    const [dbUserEmail, setDBUserEmail] = useState<string>('');
+    const [dbUserName, setDBUserName] = useState<string>('');
 
     const steps = (step: SignUpStep) => {
         switch (step) {
             case SignUpStep.SignUp:
-                return <SignUpForm setCurrentStep={setCurrentStep} />
+                return <SignUpForm setCurrentStep={setCurrentStep} setDBUserEmail={setDBUserEmail} setDBUserName={setDBUserName} />
             case SignUpStep.Verification:
-                return <EmailVerification />
+                return <EmailVerification dbName={dbUserName} dbEmail={dbUserEmail} />
         }
     }
 

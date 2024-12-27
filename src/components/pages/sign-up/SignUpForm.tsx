@@ -8,9 +8,11 @@ import { Header } from "../shared-components/Header";
 
 interface SignUpFormProps {
   setCurrentStep: React.Dispatch<React.SetStateAction<SignUpStep>>;
+  setDBUserName: React.Dispatch<React.SetStateAction<string>>;
+  setDBUserEmail: React.Dispatch<React.SetStateAction<string>>;
 }
 
-export const SignUpForm = ({ setCurrentStep }: SignUpFormProps): JSX.Element => {
+export const SignUpForm = ({ setCurrentStep, setDBUserName, setDBUserEmail }: SignUpFormProps): JSX.Element => {
   const [firstName, setFirstName] = useState('');
   const [lastName, setLastName] = useState('');
   const [email, setEmail] = useState('');
@@ -48,6 +50,8 @@ export const SignUpForm = ({ setCurrentStep }: SignUpFormProps): JSX.Element => 
       setIsError(true);
       setErrorMessage('An unexpected error occurred.');
     } finally {
+      setDBUserName(firstName + ' ' + lastName);
+      setDBUserEmail(email);
       setLoading(false);
     }
   };

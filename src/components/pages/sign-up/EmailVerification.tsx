@@ -6,7 +6,12 @@ import { useClerk } from "@clerk/clerk-react";
 import { handleEmailVerification } from "./auth/SignUpModel";
 import { Header } from "../shared-components/Header";
 
-export const EmailVerification = (): JSX.Element => {
+interface EmailVerificationProps {
+    dbName: string;
+    dbEmail: string;
+}
+
+export const EmailVerification = ({ dbName, dbEmail }: EmailVerificationProps): JSX.Element => {
     const [emailVerificationCode, setEmailVerificationCode] = useState('');
     const [loading, setLoading] = useState(false);
     const [isError, setIsError] = useState<boolean>(false);
@@ -17,7 +22,7 @@ export const EmailVerification = (): JSX.Element => {
 
     const handleSubmit = async () => {
         console.log('Email Verification Code:', emailVerificationCode);
-        await handleEmailVerification(emailVerificationCode, setIsError, setErrorMessage, setLoading, navigate, clerk);
+        await handleEmailVerification(emailVerificationCode, setIsError, setErrorMessage, setLoading, navigate, clerk, dbName, dbEmail);
     };
 
     return (

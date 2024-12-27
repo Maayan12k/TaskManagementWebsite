@@ -1,5 +1,6 @@
 import { ClerkAPIErrorResponse } from "../../constants-styles-types/types";
 import { SignUpStep } from "../../constants-styles-types";
+import axios from "axios";
 
 const isClerkAPIResponseError = (error: any): error is ClerkAPIErrorResponse => {
     return error.clerkError;
@@ -35,13 +36,17 @@ export const handleEmailVerification = async (
     setErrorMessage: React.Dispatch<React.SetStateAction<string>>,
     setLoading: React.Dispatch<React.SetStateAction<boolean>>,
     navigate: (path: string) => void,
-    clerk: any
+    clerk: any,
+    email: string,
+    name: string,
 ): Promise<void> => {
     setLoading(true);
 
     try {
         const verify = await clerk.client.signUp.attemptEmailAddressVerification({ code });
         await clerk.setActive({ session: verify.createdSessionId });
+        const response = await axios.post("http://localhost:8080/users", { email: email, name: name });
+        console.log("Created User:", response.data);
         navigate('/dashboard');
     } catch (error) {
         console.error(JSON.stringify(error, null, 2));
