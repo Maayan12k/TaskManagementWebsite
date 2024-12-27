@@ -1,28 +1,21 @@
 import { Alert, Button, Container, Form, FormField, Input, SpaceBetween } from "@cloudscape-design/components";
 import { SpaceBetweenDirection, SpaceBetweenSize } from "../constants-styles-types";
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
 import { useClerk } from "@clerk/clerk-react";
 import { handleEmailVerification } from "./auth/SignUpModel";
 import { Header } from "../shared-components/Header";
 
-interface EmailVerificationProps {
-    dbName: string;
-    dbEmail: string;
-}
-
-export const EmailVerification = ({ dbName, dbEmail }: EmailVerificationProps): JSX.Element => {
+export const EmailVerification = (): JSX.Element => {
     const [emailVerificationCode, setEmailVerificationCode] = useState('');
     const [loading, setLoading] = useState(false);
     const [isError, setIsError] = useState<boolean>(false);
     const [errorMessage, setErrorMessage] = useState('');
 
-    const navigate = useNavigate();
     const clerk = useClerk();
 
     const handleSubmit = async () => {
         console.log('Email Verification Code:', emailVerificationCode);
-        await handleEmailVerification(emailVerificationCode, setIsError, setErrorMessage, setLoading, navigate, clerk, dbName, dbEmail);
+        await handleEmailVerification(emailVerificationCode, setIsError, setErrorMessage, setLoading, clerk);
     };
 
     return (

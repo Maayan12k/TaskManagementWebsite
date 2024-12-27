@@ -51,18 +51,6 @@ export const DashboardPage = (): JSX.Element => {
                 // Set loading state to true
                 setIsCardsLoading(true);
 
-                // Make HTTP GET request to the 'get users' endpoint
-                const response = await axios.get("http://localhost:8080/users");
-
-                // Log the response to the console
-                console.log("Fetched Users:", response.data);
-
-                // Example: You can also format and use the data as needed
-                // const formattedItems = response.data.map((user) => ({
-                //     type: "link",
-                //     text: `User: ${user.name}`,
-                //     href: "#",
-                // }));
                 // setNavigationItems(formattedItems);
             } catch (error) {
                 console.error("Error fetching users:", error);
@@ -194,8 +182,6 @@ export const DashboardPage = (): JSX.Element => {
                     />
                 }
             />
-
-
         </>
     );
 };

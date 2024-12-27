@@ -3,22 +3,41 @@ import { outerContainerStyle, overlayContainerStyle, SignUpStep, UserLocation } 
 import { NavigationBar } from "../shared-components/NavigationBar"
 import { SignUpForm } from "./SignUpForm"
 import { EmailVerification } from "./EmailVerification"
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { Background } from "../shared-components/Background"
+import { useAuth } from "@clerk/clerk-react"
+import axios from "axios"
+import { useNavigate } from "react-router-dom"
 
 export const SignUpPage = (): JSX.Element => {
     const [currentStep, setCurrentStep] = useState<SignUpStep>(SignUpStep.SignUp);
     const [dbUserEmail, setDBUserEmail] = useState<string>('');
     const [dbUserName, setDBUserName] = useState<string>('');
 
+    const navigate = useNavigate();
+
     const steps = (step: SignUpStep) => {
         switch (step) {
             case SignUpStep.SignUp:
                 return <SignUpForm setCurrentStep={setCurrentStep} setDBUserEmail={setDBUserEmail} setDBUserName={setDBUserName} />
             case SignUpStep.Verification:
-                return <EmailVerification dbName={dbUserName} dbEmail={dbUserEmail} />
+                return <EmailVerification />
         }
     }
+
+    const { userId, isLoaded } = useAuth();
+
+    useEffect(() => {
+        const createUser = async () => {
+            if (userId && isLoaded) {
+                console.log('User ID:', userId);
+                const response = await axios.post("http://localhost:8080/users", { id: userId, email: dbUserEmail, name: dbUserName });
+                console.log("Created User:", response.data);
+                navigate('/dashboard');
+            }
+        };
+        createUser();
+    }, [userId, isLoaded]);
 
     return (
         <>

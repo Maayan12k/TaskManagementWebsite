@@ -1,4 +1,4 @@
-import { Alert, Box, Button, Container, Form, FormField, Input, SpaceBetween } from "@cloudscape-design/components";
+import { Alert, Button, Container, Form, FormField, Input, SpaceBetween } from "@cloudscape-design/components";
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import { SignUpStep, SpaceBetweenDirection, SpaceBetweenSize } from "../constants-styles-types";
@@ -45,13 +45,13 @@ export const SignUpForm = ({ setCurrentStep, setDBUserName, setDBUserEmail }: Si
     setLoading(true);
     try {
       await handleSignUp(email, password, setCurrentStep, setIsError, setErrorMessage, clerk);
+      setDBUserEmail(email);
+      setDBUserName(`${firstName} ${lastName}`);
     } catch (error) {
       console.error(JSON.stringify(error, null, 2));
       setIsError(true);
       setErrorMessage('An unexpected error occurred.');
     } finally {
-      setDBUserName(firstName + ' ' + lastName);
-      setDBUserEmail(email);
       setLoading(false);
     }
   };
