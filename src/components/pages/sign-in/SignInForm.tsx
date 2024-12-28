@@ -3,7 +3,7 @@ import { useEffect, useState } from "react";
 import { SpaceBetweenDirection, SpaceBetweenSize } from "../constants-styles-types/styling-constants";
 import { Link, useNavigate } from "react-router-dom";
 import { Header } from "../shared-components/Header";
-import { useClerk, useSession } from "@clerk/clerk-react";
+import { useAuth, useClerk, useSession } from "@clerk/clerk-react";
 import { handleSignIn } from "./auth/SignInModel";
 
 export const SignInForm = (): JSX.Element => {
@@ -17,7 +17,8 @@ export const SignInForm = (): JSX.Element => {
     const [errorMessage, setErrorMessage] = useState('');
 
     const clerk = useClerk();
-    const session = useSession();
+    const { isLoaded, isSignedIn } = useSession();
+    const { userId } = useAuth();
     const navigate = useNavigate();
 
 
@@ -43,7 +44,7 @@ export const SignInForm = (): JSX.Element => {
 
         if (isFormValid()) {
             setLoading(true);
-            if (!session.isSignedIn) {
+            if (!isSignedIn) {
                 await handleSignIn({
                     email,
                     password,
@@ -57,7 +58,7 @@ export const SignInForm = (): JSX.Element => {
                 setLoading(false);
             } else {
                 console.log('User already signed in');
-                navigate('/dashboard');
+                navigate(`/dashboard/${userId}`);
             }
 
         } else {
@@ -67,10 +68,11 @@ export const SignInForm = (): JSX.Element => {
     }
 
     useEffect(() => {
-        if (session.isSignedIn) {
-            navigate('/dashboard');
+        if (isSignedIn && isLoaded) {
+            navigate(`/dashboard/${userId}`);
+            console.log('RAN!');
         }
-    }, [session]);
+    }, [isSignedIn, isLoaded]);
 
     return (
         <div style={{ width: '40vw' }}>

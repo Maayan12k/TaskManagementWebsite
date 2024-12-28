@@ -33,7 +33,7 @@ export const SignUpPage = (): JSX.Element => {
                 console.log('User ID:', userId);
                 const response = await axios.post("http://localhost:8080/users", { id: userId, email: dbUserEmail, name: dbUserName });
                 console.log("Created User:", response.data);
-                navigate('/dashboard');
+                navigate(`/dashboard/${userId}`);
             }
         };
         createUser();

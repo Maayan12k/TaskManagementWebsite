@@ -11,6 +11,7 @@ import {
     TextFilter,
 } from "@cloudscape-design/components";
 import { useState, useEffect } from "react";
+import { useParams } from 'react-router-dom';
 import { NavigationBar } from "../shared-components/NavigationBar";
 import { exampleDashboard } from "./mock-data";
 import { UserLocation } from "../constants-styles-types";
@@ -21,7 +22,8 @@ import { CreateNewTaskModal } from "./CreateNewTaskModal";
 import axios from "axios";
 
 export const DashboardPage = (): JSX.Element => {
-    const [selectedProject, setSelectedProject] = useState<string>("Project #1");
+    const [selectedProject, setSelectedProject] = useState<string>("");
+    const [displayedTasks, setDisplayedTasks] = useState<any[]>([]);
     const [isSignOutConfirmOpen, setIsSignOutConfirmOpen] = useState<boolean>(false);
     const [isCreateNewProjectOpen, setIsCreateNewProjectOpen] = useState<boolean>(false);
     const [isCreateNewTaskOpen, setIsCreateNewTaskOpen] = useState<boolean>(false);
@@ -29,13 +31,18 @@ export const DashboardPage = (): JSX.Element => {
     const [isSignOutLoading, setIsSignOutLoading] = useState<boolean>(false);
     const [isCreateNewProjectConfirmLoading, setIsCreateNewProjectConfirmLoading] = useState<boolean>(false);
     const [isCardsLoading, setIsCardsLoading] = useState<boolean>(false);
+
     const [isNewUser, setIsNewUser] = useState<boolean>(false);
     const [navigationItems, setNavigationItems] = useState<any[]>([]);
+
     const [newProjectName, setNewProjectName] = useState<string>("");
 
     const clerk = useClerk();
+    const { userId } = useParams();
 
-    const handleNavigationClick = (event: any) => setSelectedProject(event.detail.text);
+    const handleNavigationClick = (event: any) => {
+        setSelectedProject(event.detail.text);
+    };
 
     const selectedItems = isNewUser
         ? []
@@ -46,21 +53,36 @@ export const DashboardPage = (): JSX.Element => {
                 : [];
 
     useEffect(() => {
-        const fetchUsers = async () => {
-            try {
-                // Set loading state to true
-                setIsCardsLoading(true);
 
-                // setNavigationItems(formattedItems);
+        const fetchProjects = async () => {
+            try {
+                setIsCardsLoading(true);
+                const response = await axios.get(`http://localhost:8080/projects/user/${userId}`);
+
+                console.log("Projects:", response.data);
+
+                if (response.data.length === 0) {
+                    setIsNewUser(true);
+                    console.log("No projects found for user");
+                } else {
+                    const projects = response.data.map((project: any) => ({
+                        text: project.name,
+                        href: `#`,
+                        type: "link",
+                    }));
+
+                    setNavigationItems(projects);
+                    setSelectedProject(projects[0].text);
+                }
+
             } catch (error) {
                 console.error("Error fetching users:", error);
             } finally {
-                // Set loading state to false
                 setIsCardsLoading(false);
             }
         };
 
-        fetchUsers();
+        fetchProjects();
     }, []);
 
     const handleSignOutConfirmClick = () => {

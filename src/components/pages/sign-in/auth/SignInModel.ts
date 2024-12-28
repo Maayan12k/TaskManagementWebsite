@@ -31,7 +31,6 @@ export const handleSignIn = async ({
 
         if (signInAttempt.status === "complete") {
             await clerk.setActive({ session: signInAttempt.createdSessionId });
-            navigate("/dashboard");
         } else {
             console.error(JSON.stringify(signInAttempt, null, 2));
         }
