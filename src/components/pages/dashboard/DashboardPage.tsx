@@ -11,19 +11,19 @@ import {
     TextFilter,
 } from "@cloudscape-design/components";
 import { useState, useEffect } from "react";
-import { useParams } from 'react-router-dom';
 import { NavigationBar } from "../shared-components/NavigationBar";
-import { exampleDashboard } from "./mock-data";
 import { UserLocation } from "../constants-styles-types";
-import { useClerk } from "@clerk/clerk-react";
+import { useAuth, useClerk } from "@clerk/clerk-react";
 import { CreateNewProjectModal } from "./CreateNewProjectModal";
 import { SignOutConfirmModal } from "./SignOutConfirmModal";
 import { CreateNewTaskModal } from "./CreateNewTaskModal";
 import axios from "axios";
+import { Item } from "../constants-styles-types/types";
 
 export const DashboardPage = (): JSX.Element => {
+    const [projects, setProjects] = useState<any[]>([]);
     const [selectedProject, setSelectedProject] = useState<string>("");
-    const [displayedTasks, setDisplayedTasks] = useState<any[]>([]);
+    const [displayedTasks, setDisplayedTasks] = useState<any[] | null[]>([]);
     const [isSignOutConfirmOpen, setIsSignOutConfirmOpen] = useState<boolean>(false);
     const [isCreateNewProjectOpen, setIsCreateNewProjectOpen] = useState<boolean>(false);
     const [isCreateNewTaskOpen, setIsCreateNewTaskOpen] = useState<boolean>(false);
@@ -36,76 +36,133 @@ export const DashboardPage = (): JSX.Element => {
     const [navigationItems, setNavigationItems] = useState<any[]>([]);
 
     const [newProjectName, setNewProjectName] = useState<string>("");
+    const [newProjectDescription, setNewProjectDescription] = useState<string>("");
+
+    const [newTaskName, setNewTaskName] = useState<string>("");
+    const [newTaskDescription, setNewTaskDescription] = useState<string>("");
+    const [newTaskProjectId, setNewTaskProjectId] = useState<number>(0);
 
     const clerk = useClerk();
-    const { userId } = useParams();
+    const { userId } = useAuth();
 
     const handleNavigationClick = (event: any) => {
-        setSelectedProject(event.detail.text);
+        const clickedProject = projects.find((project) => project.name === event.detail.text);
+        if (clickedProject) {
+            setSelectedProject(clickedProject.name);
+            setDisplayedTasks(clickedProject.tasks);
+        } else {
+            setDisplayedTasks([]);
+        }
     };
 
-    const selectedItems = isNewUser
-        ? []
-        : selectedProject === "Project #1"
-            ? exampleDashboard.projects[0]
-            : selectedProject === "Project #2"
-                ? exampleDashboard.projects[1]
-                : [];
-
     useEffect(() => {
-
         const fetchProjects = async () => {
             try {
                 setIsCardsLoading(true);
                 const response = await axios.get(`http://localhost:8080/projects/user/${userId}`);
 
-                console.log("Projects:", response.data);
+                console.log("Projects fetched:", response.data);
 
                 if (response.data.length === 0) {
                     setIsNewUser(true);
-                    console.log("No projects found for user");
                 } else {
-                    const projects = response.data.map((project: any) => ({
-                        text: project.name,
-                        href: `#`,
-                        type: "link",
-                    }));
-
-                    setNavigationItems(projects);
-                    setSelectedProject(projects[0].text);
+                    setProjects(response.data);
+                    setNavigationItems(
+                        response.data.map((project: any) => ({
+                            text: project.name,
+                            href: `#`,
+                            type: "link",
+                            id: project.id,
+                        }))
+                    );
+                    setSelectedProject(response.data[0].name);
+                    setDisplayedTasks(response.data[0].tasks);
                 }
-
             } catch (error) {
-                console.error("Error fetching users:", error);
+                console.error("Error fetching projects:", error);
             } finally {
                 setIsCardsLoading(false);
             }
         };
 
         fetchProjects();
-    }, []);
+    }, [userId]);
 
     const handleSignOutConfirmClick = () => {
         setIsSignOutLoading(true);
         clerk.signOut();
     };
 
-    const handleCreateNewProjectConfirmClick = () => {
+    const handleCreateNewProjectConfirmClick = async () => {
         setIsCreateNewProjectConfirmLoading(true);
-        // Create new project
+
+        try {
+            const response = await axios.post("http://localhost:8080/projects", {
+                name: newProjectName,
+                description: newProjectDescription,
+                projectOwnerId: userId,
+            });
+
+            console.log("Project created:", response.data);
+
+            const projects = navigationItems.map((project: any) => project.text);
+            projects.push(newProjectName);
+
+            setNavigationItems(projects.map((project: any) => ({
+                text: project,
+                href: `#`,
+                type: "link",
+            })));
+
+            setSelectedProject(newProjectName);
+            setNewProjectName("");
+            setNewProjectDescription("");
+        } catch (error) {
+            console.error("Error creating project:", error);
+        } finally {
+            setIsCreateNewProjectConfirmLoading(false);
+            setIsCreateNewProjectOpen(false);
+        }
+
     }
 
-    const handleCreateNewTaskConfirmClick = () => {
+    const handleCreateNewTaskConfirmClick = async () => {
         setIsCreateNewTaskConfirmLoading(true);
-        // Create new task
-    }
 
-    type Item = {
-        name: string;
-        description: string;
-        type: string;
-        size: string;
+        try {
+            const response = await axios.post("http://localhost:8080/tasks", {
+                title: newTaskName,
+                description: newTaskDescription,
+                projectId: newTaskProjectId,
+            });
+
+            console.log("Task created:", response.data);
+
+            const updatedProjects = [...projects];
+            const selectedProjectIndex = updatedProjects.findIndex(
+                (project) => project.id === newTaskProjectId
+            );
+
+            if (selectedProjectIndex !== -1) {
+                updatedProjects[selectedProjectIndex].tasks.push(response.data);
+            }
+
+            setProjects(updatedProjects);
+
+            if (updatedProjects[selectedProjectIndex]?.name === selectedProject) {
+                setDisplayedTasks(updatedProjects[selectedProjectIndex].tasks);
+            }
+
+            setNewTaskName("");
+            setNewTaskDescription("");
+        } catch (error) {
+            console.error("Error creating task:", error);
+        } finally {
+            setIsCreateNewTaskConfirmLoading(false);
+            setIsCreateNewTaskOpen(false);
+        }
     };
+
 
     return (
         <>
@@ -121,6 +178,12 @@ export const DashboardPage = (): JSX.Element => {
                 onDismiss={() => setIsCreateNewTaskOpen(false)}
                 onCreate={handleCreateNewTaskConfirmClick}
                 loading={isCreateNewTaskConfirmLoading}
+                newTaskName={newTaskName}
+                setNewTaskName={setNewTaskName}
+                newTaskDescription={newTaskDescription}
+                setNewTaskDescription={setNewTaskDescription}
+                setNewTaskProjectId={setNewTaskProjectId}
+                projects={projects}
             />
 
             <CreateNewProjectModal
@@ -128,8 +191,10 @@ export const DashboardPage = (): JSX.Element => {
                 onDismiss={() => setIsCreateNewProjectOpen(false)}
                 onCreate={handleCreateNewProjectConfirmClick}
                 loading={isCreateNewProjectConfirmLoading}
-                projectName={newProjectName}
+                newProjectName={newProjectName}
                 setNewProjectName={setNewProjectName}
+                newProjectDescription={newProjectDescription}
+                setNewProjectDescription={setNewProjectDescription}
             />
 
             <SignOutConfirmModal
@@ -163,7 +228,7 @@ export const DashboardPage = (): JSX.Element => {
                         cardDefinition={{
                             header: (item: Item) => (
                                 <Link href="" fontSize="heading-m">
-                                    {item.name}
+                                    {item.title}
                                 </Link>
                             ),
                             sections: [
@@ -173,19 +238,14 @@ export const DashboardPage = (): JSX.Element => {
                                     content: (item) => item.description,
                                 },
                                 {
-                                    id: "type",
-                                    header: "Type",
-                                    content: (item) => item.type,
-                                },
-                                {
-                                    id: "size",
-                                    header: "Size",
-                                    content: (item) => item.size,
+                                    id: "status",
+                                    header: "Status",
+                                    content: (item) => item.status,
                                 },
                             ],
                         }}
                         cardsPerRow={[{ cards: 1 }, { minWidth: 500, cards: 2 }]}
-                        items={selectedItems}
+                        items={displayedTasks}
                         loading={isCardsLoading}
                         loadingText="Loading resources"
                         stickyHeader
@@ -193,8 +253,17 @@ export const DashboardPage = (): JSX.Element => {
                         empty={
                             <Box margin={{ vertical: "xs" }} textAlign="center" color="inherit">
                                 <SpaceBetween size="m">
-                                    <b>No Projects</b>
-                                    <Button onClick={() => setIsCreateNewProjectOpen(true)}>Create Project</Button>
+                                    {projects.length === 0 ? (
+                                        <>
+                                            <b>No Projects</b>
+                                            <Button onClick={() => setIsCreateNewProjectOpen(true)}>Create Project</Button>
+                                        </>
+                                    ) : (
+                                        <>
+                                            <b>No Tasks</b>
+                                            <Button onClick={() => setIsCreateNewTaskOpen(true)}>Create Task</Button>
+                                        </>
+                                    )}
                                 </SpaceBetween>
                             </Box>
                         }

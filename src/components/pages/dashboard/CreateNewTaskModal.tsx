@@ -1,15 +1,49 @@
 import { Modal, Box, SpaceBetween, Button, Container, Alert, FormField, Input, Select } from "@cloudscape-design/components";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
-interface CreateNewProjectModalProps {
+interface CreateNewTaskModalProps {
     visible: boolean;
     onDismiss: () => void;
     onCreate: () => void;
     loading: boolean;
+    newTaskName: string;
+    setNewTaskName: React.Dispatch<React.SetStateAction<string>>;
+    newTaskDescription: string;
+    setNewTaskDescription: React.Dispatch<React.SetStateAction<string>>;
+    setNewTaskProjectId: React.Dispatch<React.SetStateAction<number>>;
+    projects: { id: string; name: string }[];
 }
 
-export const CreateNewTaskModal = ({ visible, onDismiss, onCreate, loading }: CreateNewProjectModalProps): JSX.Element => {
-    const [selectedOption, setSelectedOption] = useState({ label: "Option 1", value: "1" });
+export const CreateNewTaskModal = ({
+    visible,
+    onDismiss,
+    onCreate,
+    loading,
+    newTaskName,
+    setNewTaskName,
+    newTaskDescription,
+    setNewTaskDescription,
+    setNewTaskProjectId,
+    projects
+}: CreateNewTaskModalProps): JSX.Element => {
+    const [selectedOption, setSelectedOption] = useState<{ label?: string; value?: string }>({ label: "Select a project" });
+
+    const [showTaskNameError, setShowTaskNameError] = useState(false);
+
+    const handleTaskNameChange = (value: string) => {
+        setNewTaskName(value);
+        setShowTaskNameError(!value.trim());
+    };
+
+    const isCreateDisabled = !newTaskName.trim() || !selectedOption.value;
+
+    const handleSelectChange = (selectedOption: { label?: string; value?: string }) => {
+        setSelectedOption(selectedOption);
+
+        const projectId = selectedOption.value ? parseInt(selectedOption.value, 10) : NaN;
+        setNewTaskProjectId(projectId);
+    };
+
     return (
         <Modal
             visible={visible}
@@ -22,7 +56,7 @@ export const CreateNewTaskModal = ({ visible, onDismiss, onCreate, loading }: Cr
                         <Button variant="link" onClick={onDismiss}>
                             Cancel
                         </Button>
-                        <Button variant="primary" loading={loading} onClick={onCreate}>
+                        <Button variant="primary" loading={loading} onClick={onCreate} disabled={isCreateDisabled}>
                             Create
                         </Button>
                     </SpaceBetween>
@@ -32,27 +66,23 @@ export const CreateNewTaskModal = ({ visible, onDismiss, onCreate, loading }: Cr
             <Container>
                 <SpaceBetween direction="vertical" size="l">
                     <Alert type="info" dismissible>
-                        Note: Task names within the same project must be unique.
+                        Note: Must select an existing project.
                     </Alert>
-                    <FormField label="Task Name">
-                        <Input value={""} />
+                    <FormField label="Task Name" errorText={showTaskNameError ? "Task name cannot be empty." : undefined}>
+                        <Input value={newTaskName} onChange={({ detail }) => handleTaskNameChange(detail.value)} />
+                    </FormField>
+                    <FormField label="Task Description" >
+                        <Input value={newTaskDescription} onChange={({ detail }) => setNewTaskDescription(detail.value)} />
                     </FormField>
                     <FormField label="Select a project">
                         <Select
                             selectedOption={selectedOption}
-                            onChange={({ detail }) =>
-                                setSelectedOption({
-                                    label: detail.selectedOption.label || "",
-                                    value: detail.selectedOption.value || ""
-                                })
-                            }
-                            options={[
-                                { label: "Option 1", value: "1" },
-                                { label: "Option 2", value: "2" },
-                                { label: "Option 3", value: "3" },
-                                { label: "Option 4", value: "4" },
-                                { label: "Option 5", value: "5" }
-                            ]}
+                            onChange={({ detail }) => handleSelectChange(detail.selectedOption)}
+                            options={projects.map((project) => ({
+                                label: project.name,
+                                value: project.id
+                            }))}
+                            placeholder="Choose a project"
                         />
                     </FormField>
                 </SpaceBetween>

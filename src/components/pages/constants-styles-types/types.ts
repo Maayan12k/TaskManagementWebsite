@@ -22,3 +22,9 @@ export interface ClerkAPIErrorResponse {
     clerkError: boolean;
     errors: ClerkAPIError[];
 }
+
+export interface Item {
+    title: string;
+    description: string;
+    status: string;
+};
