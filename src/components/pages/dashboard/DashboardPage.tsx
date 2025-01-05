@@ -18,18 +18,22 @@ import { CreateNewProjectModal } from "./CreateNewProjectModal";
 import { SignOutConfirmModal } from "./SignOutConfirmModal";
 import { CreateNewTaskModal } from "./CreateNewTaskModal";
 import axios from "axios";
-import { Item } from "../constants-styles-types/types";
+import { Item, TaskStatus } from "../constants-styles-types/types";
+import { EditTaskModal } from "./EditTaskModal";
 
 export const DashboardPage = (): JSX.Element => {
     const [projects, setProjects] = useState<any[]>([]);
     const [selectedProject, setSelectedProject] = useState<string>("");
     const [displayedTasks, setDisplayedTasks] = useState<any[] | null[]>([]);
+
     const [isSignOutConfirmOpen, setIsSignOutConfirmOpen] = useState<boolean>(false);
+    const [isSignOutLoading, setIsSignOutLoading] = useState<boolean>(false);
+
     const [isCreateNewProjectOpen, setIsCreateNewProjectOpen] = useState<boolean>(false);
     const [isCreateNewTaskOpen, setIsCreateNewTaskOpen] = useState<boolean>(false);
     const [isCreateNewTaskConfirmLoading, setIsCreateNewTaskConfirmLoading] = useState<boolean>(false);
-    const [isSignOutLoading, setIsSignOutLoading] = useState<boolean>(false);
     const [isCreateNewProjectConfirmLoading, setIsCreateNewProjectConfirmLoading] = useState<boolean>(false);
+
     const [isCardsLoading, setIsCardsLoading] = useState<boolean>(false);
 
     const [isNewUser, setIsNewUser] = useState<boolean>(false);
@@ -41,6 +45,13 @@ export const DashboardPage = (): JSX.Element => {
     const [newTaskName, setNewTaskName] = useState<string>("");
     const [newTaskDescription, setNewTaskDescription] = useState<string>("");
     const [newTaskProjectId, setNewTaskProjectId] = useState<number>(0);
+
+    const [editedTaskName, setEditedTaskName] = useState<string>("");
+    const [editedTaskDescription, setEditedTaskDescription] = useState<string>("");
+    const [editedTaskStatus, setEditedTaskStatus] = useState<TaskStatus>(TaskStatus.BACKLOG);
+    const [editedTaskId, setEditedTaskId] = useState<number>(-1);
+    const [taskNameToBeEdited, setTaskNameToBeEdited] = useState<string>("");
+    const [isEditedTaskModalOpen, setIsEditedTaskModalOpen] = useState<boolean>(false);
 
     const clerk = useClerk();
     const { userId } = useAuth();
@@ -105,16 +116,19 @@ export const DashboardPage = (): JSX.Element => {
 
             console.log("Project created:", response.data);
 
-            const projects = navigationItems.map((project: any) => project.text);
-            projects.push(newProjectName);
+            const newProject = response.data;
+            setProjects((prevProjects) => [...prevProjects, newProject]);
 
-            setNavigationItems(projects.map((project: any) => ({
-                text: project,
-                href: `#`,
-                type: "link",
-            })));
+            setNavigationItems((prevNavigationItems) => [
+                ...prevNavigationItems,
+                {
+                    text: newProject.name,
+                    href: `#`,
+                    type: "link",
+                    id: newProject.id,
+                },
+            ]);
 
-            setSelectedProject(newProjectName);
             setNewProjectName("");
             setNewProjectDescription("");
         } catch (error) {
@@ -123,8 +137,8 @@ export const DashboardPage = (): JSX.Element => {
             setIsCreateNewProjectConfirmLoading(false);
             setIsCreateNewProjectOpen(false);
         }
+    };
 
-    }
 
     const handleCreateNewTaskConfirmClick = async () => {
         setIsCreateNewTaskConfirmLoading(true);
@@ -162,6 +176,47 @@ export const DashboardPage = (): JSX.Element => {
             setIsCreateNewTaskOpen(false);
         }
     };
+
+    const handleEditTaskButtonClick = (taskId: number, taskName: string, taskDescription: string, taskStatus: string) => {
+        setIsEditedTaskModalOpen(true);
+        setEditedTaskId(taskId);
+        setTaskNameToBeEdited(taskName);
+        setEditedTaskName(taskName);
+        setEditedTaskDescription(taskDescription);
+        setEditedTaskStatus(taskStatus as TaskStatus);
+    }
+
+    const handleConfirmEditClick = async () => {
+        try {
+            const updatedTask = {
+                title: editedTaskName,
+                description: editedTaskDescription,
+                status: editedTaskStatus,
+            };
+
+            const response = await axios.put(`http://localhost:8080/tasks/${editedTaskId}`, updatedTask);
+            console.log("Updated task:", response.data);
+
+            setDisplayedTasks((prevTasks) =>
+                prevTasks.map((task) =>
+                    task.id === editedTaskId ? { ...task, ...updatedTask } : task
+                )
+            );
+
+            setProjects((prevProjects) =>
+                prevProjects.map((project) => ({
+                    ...project,
+                    tasks: project.tasks.map((task: Item) =>
+                        task.id === editedTaskId ? { ...task, ...updatedTask } : task
+                    ),
+                }))
+            );
+        } catch (error) {
+            console.error(error);
+        } finally {
+            setIsEditedTaskModalOpen(false);
+        }
+    }
 
 
     return (
@@ -204,6 +259,20 @@ export const DashboardPage = (): JSX.Element => {
                 loading={isSignOutLoading}
             />
 
+            <EditTaskModal
+                visible={isEditedTaskModalOpen}
+                onDismiss={() => setIsEditedTaskModalOpen(false)}
+                onConfirm={handleConfirmEditClick}
+                loading={false}
+                editedTaskName={editedTaskName}
+                setEditedTaskName={setEditedTaskName}
+                editedTaskDescription={editedTaskDescription}
+                setEditedTaskDescription={setEditedTaskDescription}
+                taskNameToBeEdited={taskNameToBeEdited}
+                editedTaskStatus={editedTaskStatus}
+                setEditedTaskStatus={setEditedTaskStatus}
+            />
+
 
             <AppLayout
                 headerSelector="#h"
@@ -242,9 +311,16 @@ export const DashboardPage = (): JSX.Element => {
                                     header: "Status",
                                     content: (item) => item.status,
                                 },
+                                {
+                                    id: "taskButtons",
+                                    content: (item: Item) => <SpaceBetween size="m" direction="horizontal">
+                                        <Button iconName="edit" variant="icon" onClick={() => handleEditTaskButtonClick(item.id, item.title, item.description, item.status)} />
+                                        <Button iconName="remove" variant="icon" />
+                                    </SpaceBetween>,
+                                },
                             ],
                         }}
-                        cardsPerRow={[{ cards: 1 }, { minWidth: 500, cards: 2 }]}
+                        cardsPerRow={[{ cards: 1 }, { minWidth: 500, cards: 3 }]}
                         items={displayedTasks}
                         loading={isCardsLoading}
                         loadingText="Loading resources"

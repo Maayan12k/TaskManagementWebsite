@@ -1,5 +1,5 @@
 import { Modal, Box, SpaceBetween, Button, Container, Alert, FormField, Input, Select } from "@cloudscape-design/components";
-import { useState, useEffect } from "react";
+import { useState } from "react";
 
 interface CreateNewTaskModalProps {
     visible: boolean;

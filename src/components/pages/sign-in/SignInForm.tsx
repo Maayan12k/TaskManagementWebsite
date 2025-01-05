@@ -70,7 +70,6 @@ export const SignInForm = (): JSX.Element => {
     useEffect(() => {
         if (isSignedIn && isLoaded) {
             navigate(`/dashboard/${userId}`);
-            console.log('RAN!');
         }
     }, [isSignedIn, isLoaded]);
 

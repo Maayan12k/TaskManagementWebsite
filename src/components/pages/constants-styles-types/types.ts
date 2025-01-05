@@ -27,4 +27,10 @@ export interface Item {
     title: string;
     description: string;
     status: string;
+    id: number;
 };
+export enum TaskStatus {
+    BACKLOG = "BACKLOG",
+    IN_PROGRESS = "IN PROGRESS",
+    COMPLETED = "COMPLETED",
+}
