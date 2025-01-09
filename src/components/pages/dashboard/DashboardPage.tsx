@@ -18,11 +18,13 @@ import { CreateNewProjectModal } from "./CreateNewProjectModal";
 import { SignOutConfirmModal } from "./SignOutConfirmModal";
 import { CreateNewTaskModal } from "./CreateNewTaskModal";
 import axios from "axios";
-import { Item, TaskStatus } from "../constants-styles-types/types";
+import { Project, Task, TaskStatus } from "../constants-styles-types/types";
 import { EditTaskModal } from "./EditTaskModal";
+import { DeleteTaskModal } from "./DeleteTaskModal";
+import { DeleteProjectModal } from "./DeleteProjectModal";
 
 export const DashboardPage = (): JSX.Element => {
-    const [projects, setProjects] = useState<any[]>([]);
+    const [projects, setProjects] = useState<Project[]>([]);
     const [selectedProject, setSelectedProject] = useState<string>("");
     const [displayedTasks, setDisplayedTasks] = useState<any[] | null[]>([]);
 
@@ -53,13 +55,24 @@ export const DashboardPage = (): JSX.Element => {
     const [taskNameToBeEdited, setTaskNameToBeEdited] = useState<string>("");
     const [isEditedTaskModalOpen, setIsEditedTaskModalOpen] = useState<boolean>(false);
 
+    const [isDeleteTaskModalOpen, setIsDeleteTaskModalOpen] = useState<boolean>(false);
+    const [deletedTaskId, setDeletedTaskId] = useState<number>(-1);
+    const [deletedTaskName, setDeletedTaskName] = useState<string>("");
+    const [isDeleteTaskModalLoading, setIsDeleteTaskModalLoading] = useState<boolean>(false);
+
+    const [isDeleteProjectModalOpen, setIsDeleteProjectModalOpen] = useState<boolean>(false);
+    const [deletedProjectId, setDeletedProjectId] = useState<number>(-1);
+    const [deletedProjectName, setDeletedProjectName] = useState<string>("");
+    const [isDeleteProjectModalLoading, setIsDeleteProjectModalLoading] = useState<boolean>(false);
+
     const clerk = useClerk();
-    const { userId } = useAuth();
+    // const { userId } = useAuth();
+    const userId = 1;
 
     const handleNavigationClick = (event: any) => {
-        const clickedProject = projects.find((project) => project.name === event.detail.text);
+        const clickedProject = projects.find((project) => project.title === event.detail.text);
         if (clickedProject) {
-            setSelectedProject(clickedProject.name);
+            setSelectedProject(clickedProject.title);
             setDisplayedTasks(clickedProject.tasks);
         } else {
             setDisplayedTasks([]);
@@ -163,7 +176,7 @@ export const DashboardPage = (): JSX.Element => {
 
             setProjects(updatedProjects);
 
-            if (updatedProjects[selectedProjectIndex]?.name === selectedProject) {
+            if (updatedProjects[selectedProjectIndex]?.title === selectedProject) {
                 setDisplayedTasks(updatedProjects[selectedProjectIndex].tasks);
             }
 
@@ -206,7 +219,7 @@ export const DashboardPage = (): JSX.Element => {
             setProjects((prevProjects) =>
                 prevProjects.map((project) => ({
                     ...project,
-                    tasks: project.tasks.map((task: Item) =>
+                    tasks: project.tasks.map((task: Task) =>
                         task.id === editedTaskId ? { ...task, ...updatedTask } : task
                     ),
                 }))
@@ -217,6 +230,67 @@ export const DashboardPage = (): JSX.Element => {
             setIsEditedTaskModalOpen(false);
         }
     }
+
+    const handleDeleteTaskButtonClick = (taskName: string, taskId: number) => {
+        setIsDeleteTaskModalOpen(true);
+        setDeletedTaskId(taskId);
+        setDeletedTaskName(taskName);
+    }
+
+    const handleConfirmDeleteClick = async () => {
+        setIsDeleteTaskModalLoading(true);
+
+        try {
+            const response = await axios.delete(`http://localhost:8080/tasks/${deletedTaskId}`);
+            console.log("Deleted task:", response.data);
+
+            setDisplayedTasks((prevTasks) =>
+                prevTasks.filter((task) => task.id !== deletedTaskId)
+            );
+
+            setProjects((prevProjects) =>
+                prevProjects.map((project) => ({
+                    ...project,
+                    tasks: project.tasks.filter((task: Task) => task.id !== deletedTaskId),
+                }))
+            );
+
+        } catch (error) {
+            console.error(error);
+        } finally {
+            setIsDeleteTaskModalLoading(false);
+            setIsDeleteTaskModalOpen(false);
+        }
+    };
+
+    const handleDeleteProjectButtonClick = (projectName: string, projectId: number) => {
+        setIsDeleteProjectModalOpen(true);
+        setDeletedProjectId(projectId);
+        setDeletedProjectName(projectName);
+    }
+
+    const handleConfirmProjectDeleteClick = async () => {
+        setIsDeleteProjectModalLoading(true);
+
+        try {
+            const response = await axios.delete(`http://localhost:8080/projects/${deletedProjectId}`);
+            console.log("Deleted Project:", response.data);
+
+            setProjects((prevProjects) => prevProjects.filter(project => project.id !== deletedProjectId));
+
+            if (projects.length > 0) {
+                setSelectedProject(projects[0].title);
+            } else {
+                setSelectedProject("");
+            }
+        } catch (error) {
+            console.error("Error deleting project:", error);
+        } finally {
+            setIsDeleteProjectModalLoading(false);
+            setIsDeleteProjectModalOpen(false);
+        }
+    };
+
 
 
     return (
@@ -273,6 +347,22 @@ export const DashboardPage = (): JSX.Element => {
                 setEditedTaskStatus={setEditedTaskStatus}
             />
 
+            <DeleteTaskModal
+                visible={isDeleteTaskModalOpen}
+                onDismiss={() => setIsDeleteTaskModalOpen(false)}
+                loading={isDeleteTaskModalLoading}
+                taskNameToBeDeleted={deletedTaskName}
+                onConfirm={handleConfirmDeleteClick}
+            />
+
+            <DeleteProjectModal
+                visible={isDeleteProjectModalOpen}
+                onDismiss={() => setIsDeleteProjectModalOpen(false)}
+                loading={isDeleteProjectModalLoading}
+                projectNameToBeDeleted={deletedProjectName}
+                onConfirm={handleConfirmProjectDeleteClick}
+            />
+
 
             <AppLayout
                 headerSelector="#h"
@@ -292,13 +382,14 @@ export const DashboardPage = (): JSX.Element => {
                     <Cards
                         ariaLabels={{
                             itemSelectionLabel: (e, t) => `select ${t.name}`,
-                            selectionGroupLabel: "Item selection",
+                            selectionGroupLabel: "Task selection",
                         }}
                         cardDefinition={{
-                            header: (item: Item) => (
-                                <Link href="" fontSize="heading-m">
+                            header: (item: Task) => (
+                                <Link fontSize="heading-m">
                                     {item.title}
                                 </Link>
+
                             ),
                             sections: [
                                 {
@@ -313,9 +404,9 @@ export const DashboardPage = (): JSX.Element => {
                                 },
                                 {
                                     id: "taskButtons",
-                                    content: (item: Item) => <SpaceBetween size="m" direction="horizontal">
+                                    content: (item: Task) => <SpaceBetween size="m" direction="horizontal">
                                         <Button iconName="edit" variant="icon" onClick={() => handleEditTaskButtonClick(item.id, item.title, item.description, item.status)} />
-                                        <Button iconName="remove" variant="icon" />
+                                        <Button iconName="remove" variant="icon" onClick={() => handleDeleteTaskButtonClick(item.title, item.id)} />
                                     </SpaceBetween>,
                                 },
                             ],
@@ -344,7 +435,19 @@ export const DashboardPage = (): JSX.Element => {
                             </Box>
                         }
                         filter={!isNewUser && <TextFilter filteringPlaceholder="Find resources" filteringText="" />}
-                        header={!isNewUser && <Header variant="awsui-h1-sticky">{selectedProject} </Header>}
+                        header={!isNewUser &&
+                            <SpaceBetween size="m" direction="horizontal">
+                                <Header variant="awsui-h1-sticky">{selectedProject}</Header>
+                                <Button variant="icon" iconName="remove" onClick={() => {
+                                    const selectedProjectData = projects.find(
+                                        (project) => project.title === selectedProject
+                                    );
+                                    if (selectedProjectData) {
+                                        handleDeleteProjectButtonClick(selectedProjectData.title, selectedProjectData.id);
+                                    }
+                                }} />
+                            </SpaceBetween>
+                        }
                         pagination={!isNewUser && <Pagination currentPageIndex={1} pagesCount={2} />}
                     />
                 }

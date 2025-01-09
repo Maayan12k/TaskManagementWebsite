@@ -1,5 +1,6 @@
 import { Modal, Box, SpaceBetween, Button, Container, Alert, FormField, Input, Select } from "@cloudscape-design/components";
 import { useState } from "react";
+import { Project } from "../constants-styles-types/types";
 
 interface CreateNewTaskModalProps {
     visible: boolean;
@@ -11,7 +12,7 @@ interface CreateNewTaskModalProps {
     newTaskDescription: string;
     setNewTaskDescription: React.Dispatch<React.SetStateAction<string>>;
     setNewTaskProjectId: React.Dispatch<React.SetStateAction<number>>;
-    projects: { id: string; name: string }[];
+    projects: Project[];
 }
 
 export const CreateNewTaskModal = ({
@@ -79,8 +80,8 @@ export const CreateNewTaskModal = ({
                             selectedOption={selectedOption}
                             onChange={({ detail }) => handleSelectChange(detail.selectedOption)}
                             options={projects.map((project) => ({
-                                label: project.name,
-                                value: project.id
+                                label: project.title,
+                                value: project.id.toString(),
                             }))}
                             placeholder="Choose a project"
                         />

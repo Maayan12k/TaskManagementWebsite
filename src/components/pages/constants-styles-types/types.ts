@@ -22,15 +22,22 @@ export interface ClerkAPIErrorResponse {
     clerkError: boolean;
     errors: ClerkAPIError[];
 }
-
-export interface Item {
-    title: string;
-    description: string;
-    status: string;
-    id: number;
-};
 export enum TaskStatus {
     BACKLOG = "BACKLOG",
     IN_PROGRESS = "IN PROGRESS",
     COMPLETED = "COMPLETED",
+}
+
+export interface Task {
+    title: string;
+    description: string;
+    status: TaskStatus;
+    id: number;
+}
+
+export interface Project {
+    title: string;
+    description: string;
+    tasks: Task[];
+    id: number;
 }

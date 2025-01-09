@@ -1,7 +1,6 @@
 import { Modal, Box, SpaceBetween, Button, Container, FormField, Input, Select } from "@cloudscape-design/components";
 import { useState } from "react";
 import { TaskStatus } from "../constants-styles-types/types";
-import axios from "axios";
 
 interface EditTaskModalProps {
     visible: boolean;
