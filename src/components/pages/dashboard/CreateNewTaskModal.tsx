@@ -80,7 +80,7 @@ export const CreateNewTaskModal = ({
                             selectedOption={selectedOption}
                             onChange={({ detail }) => handleSelectChange(detail.selectedOption)}
                             options={projects.map((project) => ({
-                                label: project.title,
+                                label: project.name,
                                 value: project.id.toString(),
                             }))}
                             placeholder="Choose a project"

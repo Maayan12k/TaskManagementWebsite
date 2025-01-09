@@ -70,9 +70,9 @@ export const DashboardPage = (): JSX.Element => {
     const userId = 1;
 
     const handleNavigationClick = (event: any) => {
-        const clickedProject = projects.find((project) => project.title === event.detail.text);
+        const clickedProject = projects.find((project) => project.name === event.detail.text);
         if (clickedProject) {
-            setSelectedProject(clickedProject.title);
+            setSelectedProject(clickedProject.name);
             setDisplayedTasks(clickedProject.tasks);
         } else {
             setDisplayedTasks([]);
@@ -176,7 +176,7 @@ export const DashboardPage = (): JSX.Element => {
 
             setProjects(updatedProjects);
 
-            if (updatedProjects[selectedProjectIndex]?.title === selectedProject) {
+            if (updatedProjects[selectedProjectIndex]?.name === selectedProject) {
                 setDisplayedTasks(updatedProjects[selectedProjectIndex].tasks);
             }
 
@@ -237,7 +237,7 @@ export const DashboardPage = (): JSX.Element => {
         setDeletedTaskName(taskName);
     }
 
-    const handleConfirmDeleteClick = async () => {
+    const handleConfirmDeleteTaskClick = async () => {
         setIsDeleteTaskModalLoading(true);
 
         try {
@@ -274,24 +274,22 @@ export const DashboardPage = (): JSX.Element => {
 
         try {
             const response = await axios.delete(`http://localhost:8080/projects/${deletedProjectId}`);
-            console.log("Deleted Project:", response.data);
-
-            setProjects((prevProjects) => prevProjects.filter(project => project.id !== deletedProjectId));
-
-            if (projects.length > 0) {
-                setSelectedProject(projects[0].title);
-            } else {
-                setSelectedProject("");
-            }
+            console.log("Deleted Project status:", response.status);
+            console.log(deletedProjectName);
+            setProjects((prevProjects) => prevProjects.filter(project => project.name !== deletedProjectName));
         } catch (error) {
             console.error("Error deleting project:", error);
         } finally {
             setIsDeleteProjectModalLoading(false);
             setIsDeleteProjectModalOpen(false);
+
+            if (projects.length > 0) {
+                setSelectedProject(projects[0].name);
+            } else {
+                setSelectedProject("");
+            }
         }
     };
-
-
 
     return (
         <>
@@ -352,7 +350,7 @@ export const DashboardPage = (): JSX.Element => {
                 onDismiss={() => setIsDeleteTaskModalOpen(false)}
                 loading={isDeleteTaskModalLoading}
                 taskNameToBeDeleted={deletedTaskName}
-                onConfirm={handleConfirmDeleteClick}
+                onConfirm={handleConfirmDeleteTaskClick}
             />
 
             <DeleteProjectModal
@@ -440,10 +438,10 @@ export const DashboardPage = (): JSX.Element => {
                                 <Header variant="awsui-h1-sticky">{selectedProject}</Header>
                                 <Button variant="icon" iconName="remove" onClick={() => {
                                     const selectedProjectData = projects.find(
-                                        (project) => project.title === selectedProject
+                                        (project) => project.name === selectedProject
                                     );
                                     if (selectedProjectData) {
-                                        handleDeleteProjectButtonClick(selectedProjectData.title, selectedProjectData.id);
+                                        handleDeleteProjectButtonClick(selectedProjectData.name, selectedProjectData.id);
                                     }
                                 }} />
                             </SpaceBetween>

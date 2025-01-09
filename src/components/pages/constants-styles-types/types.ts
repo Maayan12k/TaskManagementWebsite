@@ -36,7 +36,7 @@ export interface Task {
 }
 
 export interface Project {
-    title: string;
+    name: string;
     description: string;
     tasks: Task[];
     id: number;
