@@ -28,8 +28,25 @@ export const CreateNewTaskModal = ({
     projects
 }: CreateNewTaskModalProps): JSX.Element => {
     const [selectedOption, setSelectedOption] = useState<{ label?: string; value?: string }>({ label: "Select a project" });
-
     const [showTaskNameError, setShowTaskNameError] = useState(false);
+
+    const resetForm = () => {
+        setSelectedOption({ label: "Select a project" });
+        setNewTaskName("");
+        setNewTaskDescription("");
+        setNewTaskProjectId(NaN);
+        setShowTaskNameError(false);
+    };
+
+    const handleDismiss = () => {
+        onDismiss();
+        resetForm();
+    };
+
+    const handleCreate = () => {
+        onCreate();
+        resetForm();
+    };
 
     const handleTaskNameChange = (value: string) => {
         setNewTaskName(value);
@@ -48,16 +65,16 @@ export const CreateNewTaskModal = ({
     return (
         <Modal
             visible={visible}
-            onDismiss={onDismiss}
+            onDismiss={handleDismiss}
             header="Create New Task"
             size="medium"
             footer={
                 <Box float="right">
                     <SpaceBetween direction="horizontal" size="xs">
-                        <Button variant="link" onClick={onDismiss}>
+                        <Button variant="link" onClick={handleDismiss}>
                             Cancel
                         </Button>
-                        <Button variant="primary" loading={loading} onClick={onCreate} disabled={isCreateDisabled}>
+                        <Button variant="primary" loading={loading} onClick={handleCreate} disabled={isCreateDisabled}>
                             Create
                         </Button>
                     </SpaceBetween>

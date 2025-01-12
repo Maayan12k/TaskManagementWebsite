@@ -5,7 +5,6 @@ import {
     Cards,
     Header,
     Link,
-    Pagination,
     SideNavigation,
     SpaceBetween,
     TextFilter,
@@ -22,6 +21,7 @@ import { Project, Task, TaskStatus } from "../constants-styles-types/types";
 import { EditTaskModal } from "./EditTaskModal";
 import { DeleteTaskModal } from "./DeleteTaskModal";
 import { DeleteProjectModal } from "./DeleteProjectModal";
+import DOMPurify from "isomorphic-dompurify";
 
 export const DashboardPage = (): JSX.Element => {
     const [projects, setProjects] = useState<Project[]>([]);
@@ -65,9 +65,10 @@ export const DashboardPage = (): JSX.Element => {
     const [deletedProjectName, setDeletedProjectName] = useState<string>("");
     const [isDeleteProjectModalLoading, setIsDeleteProjectModalLoading] = useState<boolean>(false);
 
+    const [filteringText, setFilteringText] = useState("");
+
     const clerk = useClerk();
-    // const { userId } = useAuth();
-    const userId = 1;
+    const { userId } = useAuth();
 
     const handleNavigationClick = (event: any) => {
         const clickedProject = projects.find((project) => project.name === event.detail.text);
@@ -85,7 +86,7 @@ export const DashboardPage = (): JSX.Element => {
                 setIsCardsLoading(true);
                 const response = await axios.get(`http://localhost:8080/projects/user/${userId}`);
 
-                console.log("Projects fetched:", response.data);
+                console.log(`Projects fetched with userId${userId}:`, response.data);
 
                 if (response.data.length === 0) {
                     setIsNewUser(true);
@@ -112,6 +113,32 @@ export const DashboardPage = (): JSX.Element => {
         fetchProjects();
     }, [userId]);
 
+    useEffect(() => {
+        if (selectedProject) {
+            const currentProject = projects.find((project) => project.name === selectedProject);
+            if (currentProject) {
+                setDisplayedTasks(currentProject.tasks);
+            } else {
+                setDisplayedTasks([]);
+            }
+        }
+    }, [projects, selectedProject]);
+
+    const handleFilterChange = (filteringText: string) => {
+        setFilteringText(filteringText);
+
+        const originalTasks = projects.find((project) => project.name === selectedProject)?.tasks || [];
+
+        if (filteringText === "") {
+            setDisplayedTasks(originalTasks);
+        } else {
+            const filteredTasks = originalTasks.filter((task) =>
+                task.title.toLowerCase().includes(filteringText.toLowerCase())
+            );
+            setDisplayedTasks(filteredTasks);
+        }
+    };
+
     const handleSignOutConfirmClick = () => {
         setIsSignOutLoading(true);
         clerk.signOut();
@@ -122,14 +149,14 @@ export const DashboardPage = (): JSX.Element => {
 
         try {
             const response = await axios.post("http://localhost:8080/projects", {
-                name: newProjectName,
+                name: DOMPurify.sanitize(newProjectName),
                 description: newProjectDescription,
                 projectOwnerId: userId,
             });
 
             console.log("Project created:", response.data);
 
-            const newProject = response.data;
+            const newProject: Project = response.data;
             setProjects((prevProjects) => [...prevProjects, newProject]);
 
             setNavigationItems((prevNavigationItems) => [
@@ -144,11 +171,14 @@ export const DashboardPage = (): JSX.Element => {
 
             setNewProjectName("");
             setNewProjectDescription("");
+            setSelectedProject(newProject.name);
+            setDisplayedTasks([]);
         } catch (error) {
             console.error("Error creating project:", error);
         } finally {
             setIsCreateNewProjectConfirmLoading(false);
             setIsCreateNewProjectOpen(false);
+            setIsNewUser(false);
         }
     };
 
@@ -165,21 +195,19 @@ export const DashboardPage = (): JSX.Element => {
 
             console.log("Task created:", response.data);
 
-            const updatedProjects = [...projects];
-            const selectedProjectIndex = updatedProjects.findIndex(
-                (project) => project.id === newTaskProjectId
-            );
-
-            if (selectedProjectIndex !== -1) {
-                updatedProjects[selectedProjectIndex].tasks.push(response.data);
-            }
+            const updatedProjects = projects.map((project) => {
+                if (project.id === newTaskProjectId) {
+                    return {
+                        ...project,
+                        tasks: [...project.tasks, response.data], // Create a new array with the new task
+                    };
+                }
+                return project;
+            });
 
             setProjects(updatedProjects);
-
-            if (updatedProjects[selectedProjectIndex]?.name === selectedProject) {
-                setDisplayedTasks(updatedProjects[selectedProjectIndex].tasks);
-            }
-
+            setDisplayedTasks(displayedTasks.concat(response.data));
+            setSelectedProject(updatedProjects.find((project) => project.id === newTaskProjectId)?.name || "");
             setNewTaskName("");
             setNewTaskDescription("");
         } catch (error) {
@@ -189,6 +217,7 @@ export const DashboardPage = (): JSX.Element => {
             setIsCreateNewTaskOpen(false);
         }
     };
+
 
     const handleEditTaskButtonClick = (taskId: number, taskName: string, taskDescription: string, taskStatus: string) => {
         setIsEditedTaskModalOpen(true);
@@ -276,18 +305,28 @@ export const DashboardPage = (): JSX.Element => {
             const response = await axios.delete(`http://localhost:8080/projects/${deletedProjectId}`);
             console.log("Deleted Project status:", response.status);
             console.log(deletedProjectName);
-            setProjects((prevProjects) => prevProjects.filter(project => project.name !== deletedProjectName));
+            setProjects((prevProjects) => {
+                const updatedProjects = prevProjects.filter((project) => project.name !== deletedProjectName);
+
+                if (updatedProjects.length > 0) {
+                    setSelectedProject(updatedProjects[0].name);
+                    setDisplayedTasks(updatedProjects[0].tasks);
+                    setNavigationItems((prevNavigationItems) => prevNavigationItems.filter((item) => item.text !== deletedProjectName));
+                } else {
+                    setSelectedProject("");
+                    setDisplayedTasks([]);
+                    setNavigationItems([]);
+                    setIsNewUser(true);
+                }
+
+                return updatedProjects;
+            });
+
         } catch (error) {
             console.error("Error deleting project:", error);
         } finally {
             setIsDeleteProjectModalLoading(false);
             setIsDeleteProjectModalOpen(false);
-
-            if (projects.length > 0) {
-                setSelectedProject(projects[0].name);
-            } else {
-                setSelectedProject("");
-            }
         }
     };
 
@@ -432,7 +471,6 @@ export const DashboardPage = (): JSX.Element => {
                                 </SpaceBetween>
                             </Box>
                         }
-                        filter={!isNewUser && <TextFilter filteringPlaceholder="Find resources" filteringText="" />}
                         header={!isNewUser &&
                             <SpaceBetween size="m" direction="horizontal">
                                 <Header variant="awsui-h1-sticky">{selectedProject}</Header>
@@ -446,7 +484,12 @@ export const DashboardPage = (): JSX.Element => {
                                 }} />
                             </SpaceBetween>
                         }
-                        pagination={!isNewUser && <Pagination currentPageIndex={1} pagesCount={2} />}
+                        filter={!isNewUser &&
+                            <TextFilter
+                                filteringPlaceholder="Find tasks"
+                                filteringText={filteringText}
+                                onChange={({ detail }) => handleFilterChange(detail.filteringText)}
+                            />}
                     />
                 }
             />
