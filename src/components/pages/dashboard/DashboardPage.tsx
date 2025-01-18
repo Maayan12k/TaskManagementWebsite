@@ -12,7 +12,7 @@ import {
 import { useState, useEffect } from "react";
 import { NavigationBar } from "../shared-components/NavigationBar";
 import { UserLocation } from "../constants-styles-types";
-import { useAuth, useClerk } from "@clerk/clerk-react";
+import { useAuth, useClerk, useSession } from "@clerk/clerk-react";
 import { CreateNewProjectModal } from "./CreateNewProjectModal";
 import { SignOutConfirmModal } from "./SignOutConfirmModal";
 import { CreateNewTaskModal } from "./CreateNewTaskModal";
@@ -22,6 +22,7 @@ import { EditTaskModal } from "./EditTaskModal";
 import { DeleteTaskModal } from "./DeleteTaskModal";
 import { DeleteProjectModal } from "./DeleteProjectModal";
 import DOMPurify from "isomorphic-dompurify";
+import { databaseEndpoint } from "../../../main";
 
 export const DashboardPage = (): JSX.Element => {
     const [projects, setProjects] = useState<Project[]>([]);
@@ -69,6 +70,20 @@ export const DashboardPage = (): JSX.Element => {
 
     const clerk = useClerk();
     const { userId } = useAuth();
+    const { session, isSignedIn } = useSession();
+
+    useEffect(() => {
+        const handleUnload = () => {
+            if (isSignedIn) {
+                clerk.signOut();
+            }
+        }
+
+        window.addEventListener('beforeunload', handleUnload)
+        return () => {
+            window.removeEventListener('beforeunload', handleUnload)
+        }
+    }, [isSignedIn, session])
 
     const handleNavigationClick = (event: any) => {
         const clickedProject = projects.find((project) => project.name === event.detail.text);
@@ -84,7 +99,7 @@ export const DashboardPage = (): JSX.Element => {
         const fetchProjects = async () => {
             try {
                 setIsCardsLoading(true);
-                const response = await axios.get(`http://localhost:8080/projects/user/${userId}`);
+                const response = await axios.get(`http://${databaseEndpoint}/projects/user/${userId}`);
 
                 console.log(`Projects fetched with userId${userId}:`, response.data);
 
@@ -148,9 +163,9 @@ export const DashboardPage = (): JSX.Element => {
         setIsCreateNewProjectConfirmLoading(true);
 
         try {
-            const response = await axios.post("http://localhost:8080/projects", {
+            const response = await axios.post(`http://${databaseEndpoint}/projects`, {
                 name: DOMPurify.sanitize(newProjectName),
-                description: newProjectDescription,
+                description: DOMPurify.sanitize(newProjectDescription),
                 projectOwnerId: userId,
             });
 
@@ -187,9 +202,9 @@ export const DashboardPage = (): JSX.Element => {
         setIsCreateNewTaskConfirmLoading(true);
 
         try {
-            const response = await axios.post("http://localhost:8080/tasks", {
-                title: newTaskName,
-                description: newTaskDescription,
+            const response = await axios.post(`http://${databaseEndpoint}/tasks`, {
+                title: DOMPurify.sanitize(newTaskName),
+                description: DOMPurify.sanitize(newTaskDescription),
                 projectId: newTaskProjectId,
             });
 
@@ -199,7 +214,7 @@ export const DashboardPage = (): JSX.Element => {
                 if (project.id === newTaskProjectId) {
                     return {
                         ...project,
-                        tasks: [...project.tasks, response.data], // Create a new array with the new task
+                        tasks: [...project.tasks, response.data],
                     };
                 }
                 return project;
@@ -231,12 +246,12 @@ export const DashboardPage = (): JSX.Element => {
     const handleConfirmEditClick = async () => {
         try {
             const updatedTask = {
-                title: editedTaskName,
-                description: editedTaskDescription,
+                title: DOMPurify.sanitize(editedTaskName),
+                description: DOMPurify.sanitize(editedTaskDescription),
                 status: editedTaskStatus,
             };
 
-            const response = await axios.put(`http://localhost:8080/tasks/${editedTaskId}`, updatedTask);
+            const response = await axios.put(`http://${databaseEndpoint}/tasks/${editedTaskId}`, updatedTask);
             console.log("Updated task:", response.data);
 
             setDisplayedTasks((prevTasks) =>
@@ -270,7 +285,7 @@ export const DashboardPage = (): JSX.Element => {
         setIsDeleteTaskModalLoading(true);
 
         try {
-            const response = await axios.delete(`http://localhost:8080/tasks/${deletedTaskId}`);
+            const response = await axios.delete(`http://${databaseEndpoint}/tasks/${deletedTaskId}`);
             console.log("Deleted task:", response.data);
 
             setDisplayedTasks((prevTasks) =>
@@ -302,7 +317,7 @@ export const DashboardPage = (): JSX.Element => {
         setIsDeleteProjectModalLoading(true);
 
         try {
-            const response = await axios.delete(`http://localhost:8080/projects/${deletedProjectId}`);
+            const response = await axios.delete(`http://${databaseEndpoint}/projects/${deletedProjectId}`);
             console.log("Deleted Project status:", response.status);
             console.log(deletedProjectName);
             setProjects((prevProjects) => {

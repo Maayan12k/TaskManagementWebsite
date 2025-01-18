@@ -29,6 +29,10 @@ const router = createBrowserRouter([
   },
 ]);
 
+export const databaseEndpoint = '54.163.62.0:8080';
+
+console.log(`Using database endpoint: ${databaseEndpoint}`);
+
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>
     <RouterProvider router={router} />

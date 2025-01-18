@@ -8,6 +8,7 @@ import { Background } from "../shared-components/Background"
 import { useAuth } from "@clerk/clerk-react"
 import axios from "axios"
 import { useNavigate } from "react-router-dom"
+import { databaseEndpoint } from "../../../main"
 
 export const SignUpPage = (): JSX.Element => {
     const [currentStep, setCurrentStep] = useState<SignUpStep>(SignUpStep.SignUp);
@@ -31,7 +32,7 @@ export const SignUpPage = (): JSX.Element => {
         const createUser = async () => {
             if (userId && isLoaded) {
                 console.log('User ID:', userId);
-                const response = await axios.post("http://localhost:8080/users", { id: userId, email: dbUserEmail, name: dbUserName });
+                const response = await axios.post(`http://${databaseEndpoint}/users`, { id: userId, email: dbUserEmail, name: dbUserName });
                 console.log("Created User:", response.data);
                 navigate(`/dashboard/${userId}`);
             }
