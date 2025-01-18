@@ -99,7 +99,7 @@ export const DashboardPage = (): JSX.Element => {
         const fetchProjects = async () => {
             try {
                 setIsCardsLoading(true);
-                const response = await axios.get(`http://${databaseEndpoint}/projects/user/${userId}`);
+                const response = await axios.get(`https://${databaseEndpoint}/projects/user/${userId}`);
 
                 console.log(`Projects fetched with userId${userId}:`, response.data);
 
@@ -163,7 +163,7 @@ export const DashboardPage = (): JSX.Element => {
         setIsCreateNewProjectConfirmLoading(true);
 
         try {
-            const response = await axios.post(`http://${databaseEndpoint}/projects`, {
+            const response = await axios.post(`https://${databaseEndpoint}/projects`, {
                 name: DOMPurify.sanitize(newProjectName),
                 description: DOMPurify.sanitize(newProjectDescription),
                 projectOwnerId: userId,
@@ -202,7 +202,7 @@ export const DashboardPage = (): JSX.Element => {
         setIsCreateNewTaskConfirmLoading(true);
 
         try {
-            const response = await axios.post(`http://${databaseEndpoint}/tasks`, {
+            const response = await axios.post(`https://${databaseEndpoint}/tasks`, {
                 title: DOMPurify.sanitize(newTaskName),
                 description: DOMPurify.sanitize(newTaskDescription),
                 projectId: newTaskProjectId,
@@ -251,7 +251,7 @@ export const DashboardPage = (): JSX.Element => {
                 status: editedTaskStatus,
             };
 
-            const response = await axios.put(`http://${databaseEndpoint}/tasks/${editedTaskId}`, updatedTask);
+            const response = await axios.put(`https://${databaseEndpoint}/tasks/${editedTaskId}`, updatedTask);
             console.log("Updated task:", response.data);
 
             setDisplayedTasks((prevTasks) =>
@@ -285,7 +285,7 @@ export const DashboardPage = (): JSX.Element => {
         setIsDeleteTaskModalLoading(true);
 
         try {
-            const response = await axios.delete(`http://${databaseEndpoint}/tasks/${deletedTaskId}`);
+            const response = await axios.delete(`https://${databaseEndpoint}/tasks/${deletedTaskId}`);
             console.log("Deleted task:", response.data);
 
             setDisplayedTasks((prevTasks) =>
@@ -317,7 +317,7 @@ export const DashboardPage = (): JSX.Element => {
         setIsDeleteProjectModalLoading(true);
 
         try {
-            const response = await axios.delete(`http://${databaseEndpoint}/projects/${deletedProjectId}`);
+            const response = await axios.delete(`https://${databaseEndpoint}/projects/${deletedProjectId}`);
             console.log("Deleted Project status:", response.status);
             console.log(deletedProjectName);
             setProjects((prevProjects) => {
