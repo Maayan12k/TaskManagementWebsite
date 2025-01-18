@@ -14,7 +14,6 @@ export const EmailVerification = (): JSX.Element => {
     const clerk = useClerk();
 
     const handleSubmit = async () => {
-        console.log('Email Verification Code:', emailVerificationCode);
         await handleEmailVerification(emailVerificationCode, setIsError, setErrorMessage, setLoading, clerk);
     };
 
