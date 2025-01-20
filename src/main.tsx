@@ -29,7 +29,7 @@ const router = createBrowserRouter([
   },
 ]);
 
-export const databaseEndpoint = '54.163.62.0:8080';
+export const databaseEndpoint = '35.175.189.153:8443';
 
 console.log(`Using database endpoint: ${databaseEndpoint}`);
 
